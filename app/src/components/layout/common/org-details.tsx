@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import {
   CheckIcon,
   ChevronsUpDownIcon,
@@ -26,7 +26,8 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { type Organization } from "@/lib/auth/org";
 import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/utils/trpc";
+import { queryClient, trpc } from "@/utils/trpc";
+import { Button } from "@/components/ui/button";
 
 interface OrgDetailsProps {
   organization: Organization;
@@ -38,7 +39,7 @@ export function OrgDetails({
   const sidebar = useSidebar();
   const { data } = useQuery(trpc.auth.queryOptions());
   const organizations = data?.allOrgs;
-
+  const router = useRouter();
   if (!organizations || !activeOrganization) {
     return <Skeleton className="h-8 w-full" />;
   }
@@ -50,11 +51,12 @@ export function OrgDetails({
   );
 
   // Sidebar on mobile is sometimes not properly reset
-  const handleCloseSidebar = (): void => {
+  const handleCloseSidebar = (href: string): void => {
     sidebar.setOpenMobile(false);
     if (typeof window !== "undefined") {
       document.body.style.removeProperty("pointer-events");
     }
+    window.location.href = href;
   };
 
   const handleOpenChange = (open: boolean): void => {
@@ -112,10 +114,11 @@ export function OrgDetails({
                     asChild
                     className="cursor-pointer gap-2 p-2"
                   >
-                    <a
-                      href={`/o/${organization.slug}`}
+                    <div
                       key={organization.id}
-                      onClick={handleCloseSidebar}
+                      onClick={() =>
+                        handleCloseSidebar(`/o/${organization.slug}`)
+                      }
                       className="flex w-full items-center gap-2"
                     >
                       <Avatar className="aspect-square size-4 rounded-sm">
@@ -133,7 +136,7 @@ export function OrgDetails({
                           <CheckIcon className="size-3 shrink-0" />
                         </div>
                       )}
-                    </a>
+                    </div>
                   </DropdownMenuItem>
                 ))}
               </ScrollArea>
@@ -143,7 +146,7 @@ export function OrgDetails({
               <a
                 href="/o"
                 className="flex w-full items-center gap-2 text-muted-foreground"
-                onClick={handleCloseSidebar}
+                onClick={() => handleCloseSidebar("/o")}
               >
                 <MoreHorizontalIcon className="size-4 shrink-0" />
                 All organizations
