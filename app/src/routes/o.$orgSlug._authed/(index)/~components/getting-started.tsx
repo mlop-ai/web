@@ -15,7 +15,7 @@ interface GettingStartedProps {
   orgSlug: string;
 }
 
-const getStorageKey = (orgSlug: string) => `getting-started-hidden-${orgSlug}`;
+const getStorageKey = (orgSlug: string) => `getting-started-hidden`;
 
 // Code snippets
 const LOGIN_CODE = `import mlop\nmlop.login()`;

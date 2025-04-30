@@ -16,6 +16,7 @@ import { RunStatusBadge } from "@/components/core/runs/run-status-badge";
 import type { LogGroup } from "./~hooks/use-filtered-logs";
 import { prefetchGetRun, useGetRun } from "./~queries/get-run";
 import { Layout, SkeletonLayout } from "./~components/layout";
+import { refreshAllData } from "./~queries/refresh-all-data";
 
 export const Route = createFileRoute(
   "/o/$orgSlug/_authed/(run)/projects/$projectName/$runId/system",
@@ -48,23 +49,6 @@ function RouteComponent() {
     projectName,
     runId,
   );
-
-  const refreshAllData = async () => {
-    await Promise.all([
-      // Invalidate and refetch main run data
-      queryClient.invalidateQueries({
-        queryKey: trpc.runs.get.queryKey(),
-        refetchType: "all",
-      }),
-
-      // Invalidate and refetch all metric queries for this run
-      queryClient.invalidateQueries({
-        queryKey: ["metrics"],
-        refetchType: "all",
-        exact: false,
-      }),
-    ]);
-  };
 
   const { lastRefreshTime, handleRefresh } = useRefreshTime({
     runId,

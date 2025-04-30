@@ -104,7 +104,7 @@ export function AccountSettings() {
         </CardHeader>
         <CardContent className="grid gap-6">
           <div className="grid gap-2">
-            <Label>Email</Label>
+            <Label>Name</Label>
             <div className="flex items-center gap-2">
               <Input
                 readOnly

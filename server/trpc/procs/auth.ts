@@ -54,6 +54,13 @@ export const enhancedAuthProcedure = publicProcedure.query(async ({ ctx }) => {
     },
   });
 
+  const membership = await ctx.prisma.member.findFirst({
+    where: {
+      organizationId: activeOrgId,
+      userId: session.user.id,
+    },
+  });
+
   // Try and parse the active organization's subscription
   const activeOrganizationSubscription =
     activeOrganization?.OrganizationSubscription
@@ -65,7 +72,7 @@ export const enhancedAuthProcedure = publicProcedure.query(async ({ ctx }) => {
         }
       : null;
 
-  if (!activeOrganization || !activeOrganizationSubscription) {
+  if (!activeOrganization || !activeOrganizationSubscription || !membership) {
     return {
       ...session,
       activeOrganization: null,
@@ -77,6 +84,7 @@ export const enhancedAuthProcedure = publicProcedure.query(async ({ ctx }) => {
   const activeOrganizationWithSubscription = {
     ...activeOrganization,
     OrganizationSubscription: activeOrganizationSubscription,
+    membership,
   };
 
   return {

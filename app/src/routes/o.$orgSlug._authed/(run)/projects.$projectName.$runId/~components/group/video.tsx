@@ -253,11 +253,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   };
 
   return (
-    <div ref={containerRef} className="relative flex flex-col bg-black">
+    <div
+      ref={containerRef}
+      className="relative flex h-full w-full flex-1 flex-col bg-black"
+    >
       <div
-        className="relative w-full"
+        className="relative aspect-video w-full flex-1"
         style={{
-          paddingTop: `${(1 / aspectRatio) * 100}%`,
+          maxHeight: "100%",
         }}
       >
         {isGifFile ? (
@@ -455,7 +458,7 @@ export const VideoView: React.FC<VideoViewProps> = ({
   // Memoize the steps array and current step value
   const { steps, currentStepValue, totalStepValue, currentStepVideos } =
     useMemo(() => {
-      if (!data)
+      if (!data || !Array.isArray(data))
         return {
           steps: [],
           currentStepValue: 0,
@@ -463,8 +466,8 @@ export const VideoView: React.FC<VideoViewProps> = ({
           currentStepVideos: [],
         };
 
-      const videosByStep = data.reduce(
-        (acc, video) => {
+      const videosByStep = (data as Video[]).reduce(
+        (acc: Record<number, Video[]>, video: Video) => {
           const step = video.step || 0;
           if (!acc[step]) {
             acc[step] = [];
@@ -472,7 +475,7 @@ export const VideoView: React.FC<VideoViewProps> = ({
           acc[step].push(video);
           return acc;
         },
-        {} as Record<number, typeof data>,
+        {} as Record<number, Video[]>,
       );
 
       const sortedSteps = Object.keys(videosByStep)
@@ -492,35 +495,24 @@ export const VideoView: React.FC<VideoViewProps> = ({
     setPage(0);
   };
 
-  // Calculate the maximum height needed for the current page's videos
-  const containerStyle = useMemo(() => {
-    if (!currentStepVideos.length) return {};
-
-    // For single video view, use a reasonable max height
-    if (currentStepVideos.length === 1) {
-      return {
-        minHeight: "min(calc(90vh - 200px), 800px)",
-      };
-    }
-
-    // For grid view, maintain a consistent aspect ratio container
-    return {
-      minHeight: "min(calc(45vh - 100px), 400px)",
-    };
+  // Additional tailwind classes for videos
+  const videoContainerClass = useMemo(() => {
+    if (!currentStepVideos.length) return "";
+    return "flex flex-col flex-1";
   }, [currentStepVideos.length]);
 
   if (isLoading || !data) {
     return (
-      <div className="space-y-4">
+      <div className="flex flex-col space-y-4">
         <h2 className="text-center font-mono text-lg">{log.logName}</h2>
         <div className="w-full animate-pulse">
-          <div className="relative w-full bg-muted" style={containerStyle} />
+          <div className="relative h-64 w-full bg-muted" />
         </div>
       </div>
     );
   }
 
-  if (data.length === 0) {
+  if (!Array.isArray(data) || data.length === 0) {
     return (
       <div className="space-y-4">
         <h2 className="text-center font-mono text-lg">{log.logName}</h2>
@@ -531,6 +523,7 @@ export const VideoView: React.FC<VideoViewProps> = ({
     );
   }
 
+  // Total pages and current page slice
   const total = Math.ceil(currentStepVideos.length / VIDEOS_PER_PAGE);
   const slice = currentStepVideos.slice(
     page * VIDEOS_PER_PAGE,
@@ -538,13 +531,13 @@ export const VideoView: React.FC<VideoViewProps> = ({
   );
 
   return (
-    <div className="space-y-4">
+    <div className="flex min-h-0 flex-1 flex-col space-y-4">
       <h2 className="text-center font-mono text-lg">{log.logName}</h2>
 
       {currentStepVideos.length === 1 ? (
-        <div className="mx-auto w-full max-w-[90vw]">
-          <div className="overflow-hidden rounded-md shadow-lg">
-            <div className="flex flex-col">
+        <div className="flex h-full min-h-0 w-full flex-1">
+          <div className="flex flex-1 flex-col overflow-hidden rounded-md shadow-lg">
+            <div className="flex flex-1 flex-col">
               <VideoPlayer
                 url={currentStepVideos[0].url}
                 fileName={currentStepVideos[0].fileName}
@@ -557,13 +550,13 @@ export const VideoView: React.FC<VideoViewProps> = ({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 sm:grid-cols-2">
             {slice.map((video: Video) => (
               <div
                 key={video.fileName}
-                className="overflow-hidden rounded-md shadow-lg"
+                className="flex aspect-video flex-col overflow-hidden rounded-md shadow-lg"
               >
-                <div className="flex flex-col">
+                <div className="flex flex-1 flex-col">
                   <VideoPlayer url={video.url} fileName={video.fileName} />
                   <p className="truncate border-t p-2 font-mono text-xs">
                     {video.fileName}

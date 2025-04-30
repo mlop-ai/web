@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useCallback,
   forwardRef,
+  useState,
 } from "react";
 import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
@@ -16,6 +17,23 @@ export interface LineData {
   label: string;
   color?: string;
   dashed?: boolean;
+}
+function useContainerSize(ref: React.RefObject<HTMLDivElement | null>) {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    if (!ref?.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const { width, height } = entry.contentRect;
+        setSize({ width, height });
+      }
+    });
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [ref]);
+
+  return size;
 }
 
 interface LineChartProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -139,6 +157,7 @@ const LineChart = forwardRef<ReactECharts, LineChartProps>(
     const { resolvedTheme: theme } = useTheme();
     const chartRef = useRef<ReactECharts>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const { width, height } = useContainerSize(containerRef);
 
     // Global extents, nice bounds & intervals
     const {
@@ -204,6 +223,13 @@ const LineChart = forwardRef<ReactECharts, LineChartProps>(
         columns: cols,
       };
     }, [lines.length]);
+
+    useEffect(() => {
+      const chart = chartRef.current?.getEchartsInstance();
+      if (chart) {
+        chart.resize();
+      }
+    }, [width, height]);
 
     // ECharts option
     // @ts-expect-error - typing is not perfect
@@ -416,11 +442,22 @@ const LineChart = forwardRef<ReactECharts, LineChartProps>(
     );
 
     return (
-      <div ref={containerRef} className={cn("p-2 pt-4", className)} {...rest}>
+      <div
+        ref={containerRef}
+        className={cn("p-2 pt-4", className)}
+        style={{
+          flexGrow: 1,
+          height: "100%",
+          width: "100%",
+          alignItems: "center",
+          display: "flex",
+        }}
+        {...rest}
+      >
         <ReactECharts
           ref={handleRef}
           option={option}
-          style={{ width: "100%", height: "100%" }}
+          style={{ width: width, height: height }}
           notMerge={true}
           lazyUpdate={false}
           theme={theme}

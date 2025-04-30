@@ -98,7 +98,7 @@ export function MetricsDisplay({
         <MultiGroup
           key={group}
           title={data.groupName}
-          groupId={`metrics-group-${group}`}
+          groupId={`${projectName}-${group}`}
           metrics={searchUtils.filterMetrics(
             group,
             data.metrics,

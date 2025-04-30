@@ -112,12 +112,11 @@ export function OrgDetails({
                     asChild
                     className="cursor-pointer gap-2 p-2"
                   >
-                    <Link
-                      to="/o/$orgSlug"
-                      preload={false}
+                    <a
+                      href={`/o/${organization.slug}`}
                       key={organization.id}
-                      params={{ orgSlug: organization.slug }}
                       onClick={handleCloseSidebar}
+                      className="flex w-full items-center gap-2"
                     >
                       <Avatar className="aspect-square size-4 rounded-sm">
                         <AvatarImage
@@ -128,27 +127,27 @@ export function OrgDetails({
                           {organization.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      {organization.name}
+                      <span className="truncate">{organization.name}</span>
                       {activeOrganization.id === organization.id && (
-                        <div className="ml-auto flex size-4 items-center justify-center rounded-full bg-blue-500 text-primary-foreground">
+                        <div className="ml-auto flex size-4 items-center justify-center rounded-full bg-green-500 text-primary-foreground">
                           <CheckIcon className="size-3 shrink-0" />
                         </div>
                       )}
-                    </Link>
+                    </a>
                   </DropdownMenuItem>
                 ))}
               </ScrollArea>
             )}
-
+            <DropdownMenuSeparator />
             <DropdownMenuItem asChild className="cursor-pointer gap-2 p-2">
-              <Link
-                to="/o"
-                className="text-muted-foreground"
+              <a
+                href="/o"
+                className="flex w-full items-center gap-2 text-muted-foreground"
                 onClick={handleCloseSidebar}
               >
                 <MoreHorizontalIcon className="size-4 shrink-0" />
                 All organizations
-              </Link>
+              </a>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

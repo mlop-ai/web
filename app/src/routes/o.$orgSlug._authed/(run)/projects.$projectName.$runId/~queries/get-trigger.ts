@@ -3,7 +3,7 @@ import { prefetchLocalQuery, useLocalQuery } from "@/lib/hooks/use-local-query";
 import { LocalCache } from "@/lib/db/local-cache";
 import type { inferOutput } from "@trpc/tanstack-react-query";
 
-type GetTriggerData = inferOutput<typeof trpc.runs.trigger.get>;
+type GetTriggerData = inferOutput<typeof trpc.runs.trigger.getTrigger>;
 
 const getTriggerCache = new LocalCache<GetTriggerData>(
   "getTrigger",
@@ -17,13 +17,13 @@ export const useGetTrigger = (
   runId: string,
 ) =>
   useLocalQuery<GetTriggerData>({
-    queryKey: trpc.runs.trigger.get.queryKey({
+    queryKey: trpc.runs.trigger.getTrigger.queryKey({
       organizationId: orgId,
       projectName: projectName,
       runId: runId,
     }),
     queryFn: () =>
-      trpcClient.runs.trigger.get.query({
+      trpcClient.runs.trigger.getTrigger.query({
         organizationId: orgId,
         projectName: projectName,
         runId: runId,
@@ -38,13 +38,13 @@ export const prefetchGetTrigger = (
   runId: string,
 ) =>
   prefetchLocalQuery(queryClient, {
-    queryKey: trpc.runs.trigger.get.queryKey({
+    queryKey: trpc.runs.trigger.getTrigger.queryKey({
       organizationId: orgId,
       projectName: projectName,
       runId: runId,
     }),
     queryFn: () =>
-      trpcClient.runs.trigger.get.query({
+      trpcClient.runs.trigger.getTrigger.query({
         organizationId: orgId,
         projectName: projectName,
         runId: runId,

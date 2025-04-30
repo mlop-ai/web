@@ -8,7 +8,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { type ColumnDef } from "@tanstack/react-table";
-import { Copy, Eye, EyeOff, MoreHorizontal, Trash2, Info } from "lucide-react";
+import {
+  Copy,
+  Eye,
+  EyeOff,
+  MoreHorizontal,
+  Trash2,
+  Info,
+  CheckCircle,
+  Clock,
+  XCircle,
+  Shield,
+  UserCog,
+  User,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +40,8 @@ import { toast } from "sonner";
 import { trpc } from "@/utils/trpc";
 import type { inferOutput } from "@trpc/tanstack-react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 type Member = inferOutput<typeof trpc.organization.listMembers>[0];
 
@@ -43,152 +58,108 @@ const formatDate = (date: Date | null) => {
 const copyToClipboard = async (text: string) => {
   try {
     await navigator.clipboard.writeText(text);
-    toast.success("API key copied to clipboard");
+    toast.success("Text copied to clipboard");
   } catch (err) {
-    toast.error("Failed to copy API key");
+    toast.error("Failed to copy to clipboard");
   }
 };
 
-// function DeleteApiKeyDialog({
-//   apiKey,
-//   organizationId,
-//   open,
-//   onOpenChange,
-// }: {
-//   apiKey: ApiKey;
-//   organizationId: string;
-//   open: boolean;
-//   onOpenChange: (open: boolean) => void;
-// }) {
-//   const queryClient = useQueryClient();
+function RoleBadge({ role }: { role: string }) {
+  const roleConfig: Record<
+    string,
+    { icon: React.ReactNode; className: string; description: string }
+  > = {
+    ADMIN: {
+      icon: <Shield className="mr-1 h-3 w-3" />,
+      className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+      description: "Full administrative access to the organization",
+    },
+    MEMBER: {
+      icon: <UserCog className="mr-1 h-3 w-3" />,
+      className:
+        "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+      description: "Can view and modify organization resources",
+    },
+    VIEWER: {
+      icon: <User className="mr-1 h-3 w-3" />,
+      className:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+      description: "Can only view organization resources",
+    },
+  };
 
-//   const { mutate: deleteApiKey, isPending } = useMutation(
-//     trpc.organization.apiKey.deleteApiKey.mutationOptions({
-//       onSuccess: () => {
-//         queryClient.invalidateQueries({
-//           queryKey: [["apiKey", "listApiKeys"]],
-//         });
-//         toast.success("API key deleted successfully");
-//         onOpenChange(false);
-//       },
-//       onError: () => {
-//         toast.error("Failed to delete API key");
-//       },
-//     }),
-//   );
+  const config = roleConfig[role] || {
+    icon: null,
+    className: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
+    description: `Role: ${role}`,
+  };
 
-//   return (
-//     <Dialog open={open} onOpenChange={onOpenChange}>
-//       <DialogContent>
-//         <DialogHeader>
-//           <DialogTitle>Delete API Key</DialogTitle>
-//           <DialogDescription>
-//             Are you sure you want to delete this API key? This action cannot be
-//             undone.
-//           </DialogDescription>
-//         </DialogHeader>
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge
+          variant="outline"
+          className={cn("flex items-center", config.className)}
+        >
+          {config.icon}
+          {role}
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{config.description}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
-//         <div className="flex flex-col gap-4 py-4">
-//           <div className="flex flex-col gap-1">
-//             <div className="text-sm font-medium">API Key Details</div>
-//             <div className="text-sm text-muted-foreground">
-//               Created: {formatDate(new Date(apiKey.createdAt))}
-//               {apiKey.expiresAt && (
-//                 <> • Expires: {formatDate(new Date(apiKey.expiresAt))}</>
-//               )}
-//             </div>
-//           </div>
-//         </div>
+function MemberDetailsDialog({
+  member,
+  open,
+  onOpenChange,
+}: {
+  member: Member;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[400px]">
+        <DialogHeader>
+          <DialogTitle>Member Details</DialogTitle>
+        </DialogHeader>
 
-//         <DialogFooter>
-//           <Button
-//             variant="outline"
-//             onClick={() => onOpenChange(false)}
-//             disabled={isPending}
-//           >
-//             Cancel
-//           </Button>
-//           <Button
-//             variant="destructive"
-//             onClick={() =>
-//               deleteApiKey({ apiKeyId: apiKey.id, organizationId })
-//             }
-//             disabled={isPending}
-//           >
-//             {isPending ? "Deleting..." : "Delete API Key"}
-//           </Button>
-//         </DialogFooter>
-//       </DialogContent>
-//     </Dialog>
-//   );
-// }
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <div className="flex items-center gap-2">
+              <div className="text-sm font-medium">Name</div>
+              <div className="text-sm text-muted-foreground">
+                {member.user?.name || "N/A"}
+              </div>
+            </div>
 
-// function ApiKeyDetailsDialog({
-//   apiKey,
-//   open,
-//   onOpenChange,
-// }: {
-//   apiKey: ApiKey;
-//   open: boolean;
-//   onOpenChange: (open: boolean) => void;
-// }) {
-//   return (
-//     <Dialog open={open} onOpenChange={onOpenChange}>
-//       <DialogContent>
-//         <DialogHeader>
-//           <DialogTitle>API Key Details</DialogTitle>
-//         </DialogHeader>
+            <div className="flex items-center gap-2">
+              <div className="text-sm font-medium">Email</div>
+              <div className="text-sm text-muted-foreground">
+                {member.user?.email || "N/A"}
+              </div>
+            </div>
 
-//         <div className="grid gap-4 py-4">
-//           <div className="grid gap-2">
-//             <div className="flex items-center gap-2">
-//               <div className="text-sm font-medium">Security Type</div>
-//               <div className="text-sm text-muted-foreground">
-//                 {apiKey.isHashed ? "Secure (Hashed)" : "Insecure (Plain Text)"}
-//               </div>
-//             </div>
+            <div className="flex items-center gap-2">
+              <div className="text-sm font-medium">Role</div>
+              <div className="text-sm text-muted-foreground">
+                <RoleBadge role={member.role} />
+              </div>
+            </div>
+          </div>
+        </div>
 
-//             <div className="flex items-center gap-2">
-//               <div className="text-sm font-medium">Created By</div>
-//               <div className="text-sm text-muted-foreground">
-//                 {apiKey.user.name} ({apiKey.user.email})
-//               </div>
-//             </div>
-
-//             <div className="flex items-center gap-2">
-//               <div className="text-sm font-medium">Created At</div>
-//               <div className="text-sm text-muted-foreground">
-//                 {formatDate(new Date(apiKey.createdAt))}
-//               </div>
-//             </div>
-
-//             {apiKey.expiresAt && (
-//               <div className="flex items-center gap-2">
-//                 <div className="text-sm font-medium">Expires At</div>
-//                 <div className="text-sm text-muted-foreground">
-//                   {formatDate(new Date(apiKey.expiresAt))}
-//                 </div>
-//               </div>
-//             )}
-
-//             {apiKey.lastUsed && (
-//               <div className="flex items-center gap-2">
-//                 <div className="text-sm font-medium">Last Used</div>
-//                 <div className="text-sm text-muted-foreground">
-//                   {formatDate(new Date(apiKey.lastUsed))}
-//                 </div>
-//               </div>
-//             )}
-//           </div>
-//         </div>
-
-//         <DialogFooter>
-//           <Button onClick={() => onOpenChange(false)}>Close</Button>
-//         </DialogFooter>
-//       </DialogContent>
-//     </Dialog>
-//   );
-// }
+        <DialogFooter>
+          <Button onClick={() => onOpenChange(false)}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export const columns = ({
   organizationId,
@@ -201,9 +172,19 @@ export const columns = ({
     cell: ({ row }) => {
       const name = row.original.user?.name;
       return (
-        <div className="max-w-[120px] truncate sm:max-w-[200px]">{name}</div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="max-w-[120px] truncate font-medium sm:max-w-[200px]">
+              {name}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{name}</p>
+          </TooltipContent>
+        </Tooltip>
       );
     },
+    filterFn: "includesString",
   },
   {
     header: "Email",
@@ -211,29 +192,33 @@ export const columns = ({
     cell: ({ row }) => {
       const email = row.original.user?.email;
       return (
-        <div className="flex max-w-[150px] items-center gap-2 sm:max-w-[300px]">
-          <span className="truncate font-mono text-sm">{email}</span>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="max-w-[150px] truncate text-sm sm:max-w-[300px]">
+              {email}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{email}</p>
+          </TooltipContent>
+        </Tooltip>
       );
     },
+    filterFn: "includesString",
   },
   {
     header: "Role",
     accessorKey: "role",
     cell: ({ row }) => {
       const role = row.original.role;
-      return (
-        <div className="flex max-w-[150px] items-center gap-2 sm:max-w-[300px]">
-          <span className="truncate font-mono text-sm">{role}</span>
-        </div>
-      );
+      return <RoleBadge role={role} />;
     },
+    filterFn: "equals",
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      const key = row.original;
-      const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+      const member = row.original;
       const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
       return (
@@ -252,9 +237,18 @@ export const columns = ({
                   <Info className="mr-2 h-4 w-4" />
                   View Details
                 </DropdownMenuItem>
+                {/* Additional actions can be added here */}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+
+          {showDetailsDialog && (
+            <MemberDetailsDialog
+              member={member}
+              open={showDetailsDialog}
+              onOpenChange={setShowDetailsDialog}
+            />
+          )}
         </>
       );
     },

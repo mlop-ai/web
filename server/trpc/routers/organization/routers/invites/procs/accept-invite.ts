@@ -24,6 +24,26 @@ export const acceptInviteProcedure = protectedProcedure
       });
     }
 
+    // Check for the usage of the organization
+    const organization = await ctx.prisma.organization.findUnique({
+      where: { id: invitation.organizationId },
+      select: {
+        members: true,
+        OrganizationSubscription: true,
+      },
+    });
+
+    const memberLimit = organization?.members.length;
+    const subscriptionLimit = organization?.OrganizationSubscription?.seats;
+
+    if (memberLimit && subscriptionLimit && memberLimit >= subscriptionLimit) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message:
+          "Organization is full. Please ask your administrator to upgrade your organization.",
+      });
+    }
+
     // Create member and update invitation in transaction
     const result = await ctx.prisma.$transaction([
       ctx.prisma.member.create({

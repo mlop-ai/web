@@ -180,9 +180,9 @@ const ImageWithZoom = ({
 
   return (
     <Dialog>
-      <div className="group relative flex items-center justify-center">
+      <div className="group relative flex h-full w-full items-center justify-center">
         <DialogTrigger asChild>
-          <div className="relative cursor-zoom-in overflow-hidden">
+          <div className="relative h-full w-full cursor-zoom-in overflow-hidden">
             <img
               src={url}
               alt={fileName}
@@ -317,7 +317,7 @@ export const ImagesView = ({
     if (!data) return { steps: [], currentStepValue: 0, totalStepValue: 0 };
 
     const imagesByStep = data.reduce(
-      (acc, image) => {
+      (acc: Record<number, typeof data>, image: any) => {
         const step = image.step || 0;
         if (!acc[step]) {
           acc[step] = [];
@@ -342,7 +342,7 @@ export const ImagesView = ({
   const currentStepImages = useMemo(() => {
     if (!data) return [];
     const imagesByStep = data.reduce(
-      (acc, image) => {
+      (acc: Record<number, typeof data>, image: any) => {
         const step = image.step || 0;
         if (!acc[step]) {
           acc[step] = [];
@@ -371,14 +371,14 @@ export const ImagesView = ({
 
   if (isLoading || !data) {
     return (
-      <div className="space-y-6 p-4">
+      <div className="h-full space-y-6 p-4">
         <h3 className="text-center font-mono text-lg font-medium text-muted-foreground">
           {log.logName}
         </h3>
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-full max-w-3xl">
-            <div className="group relative flex items-center justify-center">
-              <div className="relative aspect-[16/9] w-full overflow-hidden rounded-md">
+        <div className="flex h-[calc(100%-60px)] flex-col items-center justify-center">
+          <div className="h-full w-full max-w-4xl">
+            <div className="group relative flex h-full items-center justify-center">
+              <div className="relative aspect-[16/9] h-full w-full overflow-hidden rounded-md">
                 <Skeleton className="h-full w-full" />
               </div>
             </div>
@@ -405,15 +405,15 @@ export const ImagesView = ({
   if (data.length === 1) {
     const image = data[0];
     return (
-      <div className="space-y-6 p-4">
+      <div className="h-full space-y-6 p-4">
         <h3 className="text-center font-mono text-lg font-medium">
           {log.logName}
         </h3>
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-full max-w-3xl">
+        <div className="flex h-[calc(100%-60px)] flex-col items-center justify-center">
+          <div className="flex h-full w-full max-w-4xl items-center justify-center">
             <ImageWithZoom url={image.url} fileName={image.fileName} />
           </div>
-          <p className="font-mono text-xs text-muted-foreground">
+          <p className="mt-2 font-mono text-xs text-muted-foreground">
             {image.fileName}
           </p>
         </div>
@@ -422,7 +422,7 @@ export const ImagesView = ({
   }
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="flex h-full flex-col space-y-6 p-4">
       <h3 className="text-center font-mono text-lg font-medium">
         {log.logName}
       </h3>
@@ -436,23 +436,24 @@ export const ImagesView = ({
       />
 
       {/* Images Grid */}
-      <div className="h-[600px] overflow-y-auto rounded-lg bg-background p-2">
-        <div className="grid grid-cols-2 gap-8 p-6">
-          {paginatedImages.map((image) => (
-            <div
-              key={image.fileName}
-              className="flex flex-col items-center gap-3 rounded-xl bg-muted/15 p-6 shadow-sm"
-            >
-              <div className="flex w-full items-center justify-center rounded-lg bg-background p-4">
-                <ImageWithZoom url={image.url} fileName={image.fileName} />
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg bg-background">
+        <div className="flex-1 overflow-y-auto p-2">
+          <div className="grid h-full grid-cols-2 gap-6 p-4">
+            {paginatedImages.map((image: any) => (
+              <div
+                key={image.fileName}
+                className="flex h-full flex-col items-center gap-2 rounded-xl bg-muted/15 p-4 shadow-sm"
+              >
+                <div className="flex h-full w-full items-center justify-center rounded-lg bg-background p-2">
+                  <ImageWithZoom url={image.url} fileName={image.fileName} />
+                </div>
+                <p className="px-2 text-center font-mono text-xs break-all text-muted-foreground">
+                  {image.fileName}
+                </p>
               </div>
-              <p className="px-2 text-center font-mono text-xs break-all text-muted-foreground">
-                {image.fileName}
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-
         <PaginationControls
           currentPage={currentPage}
           totalPages={totalPages}

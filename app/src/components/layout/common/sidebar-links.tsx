@@ -4,7 +4,11 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { RiSlackFill, RiExternalLinkLine, RiBookFill } from "@remixicon/react";
+import {
+  RiExternalLinkLine,
+  RiBookFill,
+  RiDiscordFill,
+} from "@remixicon/react";
 
 interface SidebarLinksProps {
   className?: string;
@@ -33,14 +37,14 @@ export function SidebarLinks({ className }: SidebarLinksProps) {
         <SidebarMenuItem>
           <SidebarMenuButton asChild tooltip="Slack Community">
             <a
-              href="https://join.slack.com/t/mlop-ai/shared_invite/zt-33bw9829d-4v1zaF2I5MgY3a7qtSt4gw"
+              href="https://discord.gg/ybfVZgyFCX"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2"
             >
-              <RiSlackFill className="size-4 shrink-0 translate-y-[1px] text-muted-foreground" />
+              <RiDiscordFill className="size-4 shrink-0 translate-y-[1px] text-muted-foreground" />
               <span className="leading-none font-medium text-muted-foreground">
-                Slack
+                Discord
               </span>
               <RiExternalLinkLine className="ml-auto size-3 shrink-0 translate-y-[1px] text-muted-foreground" />
             </a>

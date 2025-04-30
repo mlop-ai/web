@@ -195,11 +195,13 @@ const MultiGroupImageComponent = ({
   // Early return for loading state
   if (isLoading) {
     return (
-      <div className={cn("space-y-4 p-4", className)}>
+      <div
+        className={cn("flex h-full w-full flex-col space-y-4 p-4", className)}
+      >
         <h3 className="text-center font-mono text-sm font-medium text-muted-foreground">
           {logName}
         </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid flex-1 grid-cols-1 gap-4 overflow-hidden sm:grid-cols-2 lg:grid-cols-3">
           {runs.map((run) => (
             <div key={run.runId} className="flex flex-col gap-1.5">
               <div className="flex items-center justify-center gap-1.5">
@@ -219,11 +221,13 @@ const MultiGroupImageComponent = ({
   // Use numberOfImages for the "No images found" check
   if (numberOfImages === 0) {
     return (
-      <div className={cn("space-y-4 p-4", className)}>
+      <div
+        className={cn("flex h-full w-full flex-col space-y-4 p-4", className)}
+      >
         <h3 className="text-center font-mono text-sm font-medium text-muted-foreground">
           {logName}
         </h3>
-        <div className="flex h-40 items-center justify-center text-muted-foreground">
+        <div className="flex flex-1 items-center justify-center text-muted-foreground">
           No images found
         </div>
       </div>
@@ -232,13 +236,15 @@ const MultiGroupImageComponent = ({
 
   return (
     <Dialog>
-      <div className={cn("space-y-4 p-4", className)}>
+      <div
+        className={cn("flex h-full w-full flex-col space-y-4 p-4", className)}
+      >
         <h3 className="text-center font-mono text-sm font-medium text-muted-foreground">
           {logName}
         </h3>
         <div
           className={cn(
-            "grid grid-cols-1 gap-4",
+            "grid flex-1 grid-cols-1 gap-4 overflow-auto",
             numberOfImages > 1 && "sm:grid-cols-2",
             numberOfImages === 2 && "lg:grid-cols-2",
             numberOfImages >= 3 && "lg:grid-cols-3",
@@ -264,13 +270,13 @@ const MultiGroupImageComponent = ({
                 </div>
                 <DialogTrigger asChild>
                   <div
-                    className="group relative flex cursor-zoom-in items-center justify-center overflow-hidden rounded-md bg-background/50"
+                    className="group relative flex aspect-[16/9] cursor-zoom-in items-center justify-center overflow-hidden rounded-md bg-background/50"
                     onClick={() => handleSelectImage(image, run.runName)}
                   >
                     <img
                       src={image.url}
                       alt={image.fileName}
-                      className="aspect-[16/9] w-full object-contain"
+                      className="h-full w-full object-contain"
                     />
                     <Button
                       variant="secondary"

@@ -12,7 +12,7 @@ export const auth = betterAuth({
   }),
   appName: env.NODE_ENV === "development" ? "mlop-dev" : "mlop",
   emailAndPassword: {
-    enabled: true,
+    enabled: env.IS_DOCKER === "true",
   },
   account: {
     accountLinking: {

@@ -67,6 +67,7 @@ import {
   getRecentAuthMethod,
   setRecentAuthMethod,
 } from "@/lib/auth/recent-auth-method";
+import { env } from "@/lib/env";
 
 export function SignUpCard({
   className,
@@ -268,145 +269,153 @@ export function SignUpCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-row gap-4">{renderOAuthButtons()}</div>
-        <p
-          className={cn(
-            "flex items-center gap-x-3 text-sm text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border",
-            className,
-          )}
-          {...other}
-        >
-          Or continue with{" "}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span
-                  className={cn(
-                    "px-0.5 text-foreground",
-                    recentAuthMethod === "email" &&
-                      "underline decoration-primary/50",
-                  )}
-                >
-                  email
-                </span>
-              </TooltipTrigger>
-              {recentAuthMethod === "email" && (
-                <TooltipContent>
-                  <p>You used this before</p>
-                </TooltipContent>
+        <div className="flex flex-col gap-4">{renderOAuthButtons()}</div>
+        {env.VITE_IS_DOCKER && (
+          <>
+            <p
+              className={cn(
+                "flex items-center gap-x-3 text-sm text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border",
+                className,
               )}
-            </Tooltip>
-          </TooltipProvider>
-        </p>
-        <FormProvider {...methods}>
-          <form
-            className="flex flex-col gap-4"
-            onSubmit={methods.handleSubmit(onSubmit)}
-          >
-            <FormField
-              control={methods.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem className="flex w-full flex-col">
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <InputWithAdornments
-                      type="text"
-                      maxLength={64}
-                      autoComplete="name"
-                      disabled={methods.formState.isSubmitting}
-                      startAdornment={<UserIcon className="size-4 shrink-0" />}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={methods.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem className="flex w-full flex-col">
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <InputWithAdornments
-                      type="email"
-                      maxLength={255}
-                      autoComplete="username"
-                      disabled={methods.formState.isSubmitting}
-                      startAdornment={<MailIcon className="size-4 shrink-0" />}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex flex-col gap-4">
-              <FormField
-                control={methods.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <InputPassword
-                        maxLength={72}
-                        autoCapitalize="off"
-                        autoComplete="current-password"
-                        disabled={methods.formState.isSubmitting}
-                        startAdornment={
-                          <LockIcon className="size-4 shrink-0" />
-                        }
-                        {...field}
-                      />
-                    </FormControl>
-                    <PasswordFormMessage password={password} />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={methods.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <InputPassword
-                        maxLength={72}
-                        autoCapitalize="off"
-                        autoComplete="new-password"
-                        disabled={methods.formState.isSubmitting}
-                        startAdornment={
-                          <LockIcon className="size-4 shrink-0" />
-                        }
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            {errorMessage && (
-              <Alert variant="destructive">
-                <div className="flex flex-row items-center gap-2 text-sm">
-                  <AlertCircleIcon className="size-[18px] shrink-0" />
-                  <AlertDescription>{errorMessage}</AlertDescription>
-                </div>
-              </Alert>
-            )}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={methods.formState.isSubmitting}
-              loading={methods.formState.isSubmitting}
+              {...other}
             >
-              Create account
-            </Button>
-          </form>
-        </FormProvider>
+              Or continue with{" "}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      className={cn(
+                        "px-0.5 text-foreground",
+                        recentAuthMethod === "email" &&
+                          "underline decoration-primary/50",
+                      )}
+                    >
+                      email
+                    </span>
+                  </TooltipTrigger>
+                  {recentAuthMethod === "email" && (
+                    <TooltipContent>
+                      <p>You used this before</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+            </p>
+            <FormProvider {...methods}>
+              <form
+                className="flex flex-col gap-4"
+                onSubmit={methods.handleSubmit(onSubmit)}
+              >
+                <FormField
+                  control={methods.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem className="flex w-full flex-col">
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <InputWithAdornments
+                          type="text"
+                          maxLength={64}
+                          autoComplete="name"
+                          disabled={methods.formState.isSubmitting}
+                          startAdornment={
+                            <UserIcon className="size-4 shrink-0" />
+                          }
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={methods.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="flex w-full flex-col">
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <InputWithAdornments
+                          type="email"
+                          maxLength={255}
+                          autoComplete="username"
+                          disabled={methods.formState.isSubmitting}
+                          startAdornment={
+                            <MailIcon className="size-4 shrink-0" />
+                          }
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex flex-col gap-4">
+                  <FormField
+                    control={methods.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <InputPassword
+                            maxLength={72}
+                            autoCapitalize="off"
+                            autoComplete="current-password"
+                            disabled={methods.formState.isSubmitting}
+                            startAdornment={
+                              <LockIcon className="size-4 shrink-0" />
+                            }
+                            {...field}
+                          />
+                        </FormControl>
+                        <PasswordFormMessage password={password} />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={methods.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Confirm Password</FormLabel>
+                        <FormControl>
+                          <InputPassword
+                            maxLength={72}
+                            autoCapitalize="off"
+                            autoComplete="new-password"
+                            disabled={methods.formState.isSubmitting}
+                            startAdornment={
+                              <LockIcon className="size-4 shrink-0" />
+                            }
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                {errorMessage && (
+                  <Alert variant="destructive">
+                    <div className="flex flex-row items-center gap-2 text-sm">
+                      <AlertCircleIcon className="size-[18px] shrink-0" />
+                      <AlertDescription>{errorMessage}</AlertDescription>
+                    </div>
+                  </Alert>
+                )}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={methods.formState.isSubmitting}
+                  loading={methods.formState.isSubmitting}
+                >
+                  Create account
+                </Button>
+              </form>
+            </FormProvider>
+          </>
+        )}
       </CardContent>
       <CardFooter className="flex justify-center gap-1 text-sm text-muted-foreground">
         <span>Already have an account?</span>

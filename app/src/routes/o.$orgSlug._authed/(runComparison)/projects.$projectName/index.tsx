@@ -39,13 +39,10 @@ function RouteComponent() {
   const { refresh, lastRefreshed } = useRefresh({
     queries: [
       {
-        queryKey: trpc.runs.list.queryKey(),
-        refetchType: "all",
-      },
-      {
-        queryKey: ["metrics"],
-        refetchType: "all",
-        exact: false,
+        predicate: (query) => {
+          const firstEntry = query.queryKey[0] as string | string[];
+          return firstEntry?.[0] === "runs";
+        },
       },
     ],
   });

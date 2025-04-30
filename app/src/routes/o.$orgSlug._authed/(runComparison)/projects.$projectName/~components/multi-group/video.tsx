@@ -156,11 +156,13 @@ export const MultiGroupVideo = ({
 
   if (currentStepVideos.length === 0 && !isLoading) {
     return (
-      <div className={cn("space-y-4", className)}>
+      <div
+        className={cn("flex h-full w-full flex-col space-y-4 p-4", className)}
+      >
         <h3 className="text-center font-mono text-sm font-medium text-muted-foreground">
           {logName}
         </h3>
-        <div className="flex h-40 items-center justify-center text-muted-foreground">
+        <div className="flex flex-1 items-center justify-center text-muted-foreground">
           No videos found
         </div>
       </div>
@@ -168,11 +170,16 @@ export const MultiGroupVideo = ({
   }
 
   return (
-    <div className={cn("space-y-4 p-4", className)}>
+    <div
+      className={cn(
+        "flex h-full w-full flex-grow flex-col space-y-4 p-4",
+        className,
+      )}
+    >
       <h3 className="text-center font-mono text-sm font-medium text-muted-foreground">
         {logName}
       </h3>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid h-full flex-1 grid-cols-1 gap-4 overflow-auto sm:grid-cols-2">
         {videosByRun.map(({ run, videos }) => {
           const video = videos[0]; // Take the first video for each run
           const isRunLoading = queriesWithRuns.find(
@@ -185,7 +192,7 @@ export const MultiGroupVideo = ({
           }
 
           return (
-            <div key={run.runId} className="flex flex-col gap-1.5">
+            <div key={run.runId} className="flex h-full flex-col gap-1.5">
               <div className="flex items-center justify-center gap-1.5">
                 <div
                   className="h-2 w-2 rounded-full"
@@ -200,7 +207,7 @@ export const MultiGroupVideo = ({
               </div>
               <div
                 className={cn(
-                  "overflow-hidden rounded-md shadow-lg",
+                  "flex-1 overflow-hidden rounded-md shadow-lg",
                   containerHeight,
                 )}
               >

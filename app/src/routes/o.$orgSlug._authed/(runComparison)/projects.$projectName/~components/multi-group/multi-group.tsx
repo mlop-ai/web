@@ -70,109 +70,62 @@ export const MultiGroup = ({
           }));
 
           return (
-            <Card
-              key={metric.name}
-              className={cn(
-                "w-full transition-all duration-200",
-                CHART_HEIGHTS.md,
-                "sm:h-[300px] md:h-[400px] lg:h-[500px]",
-                className,
-              )}
-            >
-              <MultiLineChart
-                lines={lines}
-                title={metric.name}
-                xlabel="step"
-                ref={setChartRef(index)}
-                onLoad={handleChartLoad}
-                organizationId={organizationId}
-                projectName={projectName}
-              />
-            </Card>
+            <MultiLineChart
+              lines={lines}
+              title={metric.name}
+              xlabel="step"
+              ref={setChartRef(index)}
+              onLoad={handleChartLoad}
+              organizationId={organizationId}
+              projectName={projectName}
+            />
           );
         }
 
         if (metric.type === "HISTOGRAM") {
           return (
-            <Card
-              key={metric.name}
-              className={cn(
-                "w-full transition-all duration-200",
-                CHART_HEIGHTS.md,
-                "sm:h-[300px] md:h-[400px] lg:h-[500px]",
-                className,
-              )}
-            >
-              <MultiHistogramView
-                logName={metric.name}
-                tenantId={organizationId}
-                projectName={projectName}
-                runs={metric.data}
-              />
-            </Card>
+            <MultiHistogramView
+              logName={metric.name}
+              tenantId={organizationId}
+              projectName={projectName}
+              runs={metric.data}
+            />
           );
         }
 
         if (metric.type === "AUDIO") {
           return (
-            <Card
-              key={metric.name}
-              className={cn(
-                "w-full transition-all duration-200",
-                "h-auto min-h-[200px]",
-                className,
-              )}
-            >
-              <MultiGroupAudio
-                logName={metric.name}
-                organizationId={organizationId}
-                projectName={projectName}
-                runs={metric.data}
-                className="h-full"
-              />
-            </Card>
+            <MultiGroupAudio
+              logName={metric.name}
+              organizationId={organizationId}
+              projectName={projectName}
+              runs={metric.data}
+              className="h-full"
+            />
           );
         }
 
         if (metric.type === "IMAGE") {
           return (
-            <Card
-              key={metric.name}
-              className={cn(
-                "w-full transition-all duration-200",
-                "h-auto min-h-[200px]",
-                className,
-              )}
-            >
-              <MultiGroupImage
-                logName={metric.name}
-                organizationId={organizationId}
-                projectName={projectName}
-                runs={metric.data}
-                className="h-full"
-              />
-            </Card>
+            <MultiGroupImage
+              logName={metric.name}
+              organizationId={organizationId}
+              projectName={projectName}
+              runs={metric.data}
+              className="h-full"
+            />
           );
         }
 
         if (metric.type === "VIDEO") {
           return (
-            <Card
-              key={metric.name}
-              className={cn(
-                "w-full transition-all duration-200",
-                "h-auto min-h-[200px]",
-                className,
-              )}
-            >
-              <MultiGroupVideo
-                logName={metric.name}
-                organizationId={organizationId}
-                projectName={projectName}
-                runs={metric.data}
-                className="h-full"
-              />
-            </Card>
+            <MultiGroupVideo
+              logName={metric.name}
+              organizationId={organizationId}
+              projectName={projectName}
+              runs={metric.data}
+              className="h-full"
+            />
           );
         }
 

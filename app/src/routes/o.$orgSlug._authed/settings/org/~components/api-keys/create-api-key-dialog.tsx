@@ -213,7 +213,7 @@ export function CreateApiKeyDialog({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 flex-shrink-0 p-0"
+                    className="h-8 w-8 flex-shrink-0 bg-background/80 p-0 hover:bg-background/50"
                     onClick={() => {
                       navigator.clipboard.writeText(createdApiKey);
                       toast.success("API key copied to clipboard", {

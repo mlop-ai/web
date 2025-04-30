@@ -3,6 +3,7 @@
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
+    "check-types": "tsc --noEmit",
     "dev:local": "pnpm db:generate:local && dotenv -e .env.locals -- next dev -p 3001",
     "dev:dev": "pnpm db:generate:dev && dotenv -e .env.dev -- next dev -p 3001",
     "dev:prod": "pnpm db:generate:prod && dotenv -e .env.prod -- next dev -p 3001",
@@ -30,7 +31,8 @@
     "db:migrate:prod": "dotenv -e .env.prod prisma migrate deploy",
     "studio:local": "dotenv -e .env.locals prisma studio",
     "studio:dev": "dotenv -e .env.dev prisma studio",
-    "studio:prod": "dotenv -e .env.prod prisma studio"
+    "studio:prod": "dotenv -e .env.prod prisma studio",
+    "prebuild": "pnpm check-types"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.787.0",

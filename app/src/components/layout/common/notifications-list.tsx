@@ -40,7 +40,7 @@ type NotificationType = NotificationResponse["items"][number]["type"];
 type Run = NotificationResponse["items"][number]["run"];
 
 interface Notification {
-  id: number;
+  id: bigint;
   type: NotificationType;
   content: string;
   createdAt: Date;
@@ -108,6 +108,92 @@ const NotificationSkeleton = () => {
   );
 };
 
+// TODO: Fix types
+const InviteList = ({
+  invites,
+  refetchInvites,
+}: {
+  invites: any[];
+  refetchInvites: () => void;
+}) => {
+  const acceptMutation = useMutation({
+    ...trpc.organization.invite.acceptInvite.mutationOptions(),
+    onSuccess: () => {
+      toast.success("Invite accepted!");
+      refetchInvites();
+      // reroute to the organization selector
+      window.location.href = "/o";
+    },
+    onError: (err: any) =>
+      toast.error(`Failed to accept invite: ${err.message}`),
+  });
+
+  const rejectMutation = useMutation({
+    ...trpc.organization.invite.rejectInvite.mutationOptions(),
+    onSuccess: () => {
+      toast.success("Invite rejected");
+      refetchInvites();
+    },
+    onError: (err: any) =>
+      toast.error(`Failed to reject invite: ${err.message}`),
+  });
+
+  if (invites.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 text-center">
+        <p className="mt-2 text-sm text-muted-foreground">No pending invites</p>
+      </div>
+    );
+  }
+
+  return (
+    <ScrollArea className="h-[400px]">
+      <div className="space-y-4 p-3">
+        <DropdownMenuGroup className="space-y-3">
+          {invites.map((invite) => (
+            <DropdownMenuItem
+              key={invite.id}
+              className="flex items-start gap-3 rounded-lg p-4"
+              onSelect={(e) => e.preventDefault()}
+            >
+              <div className="flex-1 space-y-1">
+                <p className="text-sm font-medium">
+                  Invite to join {invite.organization.name}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Invited by: {invite.user.name || invite.user.email} as{" "}
+                  {invite.role}
+                </p>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      rejectMutation.mutate({ invitationId: invite.id })
+                    }
+                    disabled={rejectMutation.isPending}
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      acceptMutation.mutate({ invitationId: invite.id })
+                    }
+                    disabled={acceptMutation.isPending}
+                  >
+                    Accept
+                  </Button>
+                </div>
+              </div>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuGroup>
+      </div>
+    </ScrollArea>
+  );
+};
+
 export const NotificationList = ({
   notifications,
   onMarkAsRead,
@@ -118,7 +204,7 @@ export const NotificationList = ({
   isLoading,
 }: {
   notifications: Notification[];
-  onMarkAsRead: (id: number) => void;
+  onMarkAsRead: (id: bigint) => void;
   organizationSlug: string;
   hasNextPage?: boolean;
   fetchNextPage?: () => void;
@@ -230,7 +316,6 @@ export const NotificationList = ({
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <NotificationStatus type={notification.type} />:
                   <p className="line-clamp-2 text-sm text-muted-foreground">
                     {notification.content}
                   </p>
@@ -320,6 +405,15 @@ export const NotificationsDropdown = () => {
     initialPageParam: null,
   });
 
+  const {
+    data: myInvites = [],
+    isLoading: isInvitesLoading,
+    refetch: refetchInvites,
+  } = useQuery({
+    ...trpc.organization.invite.myInvites.queryOptions(),
+    enabled: !!organizationId,
+  });
+
   const unreadNotifications =
     unreadNotificationsData?.pages.flatMap((page) => page.items) ?? [];
   const readNotifications =
@@ -338,7 +432,7 @@ export const NotificationsDropdown = () => {
     },
   });
 
-  const handleMarkAsRead = (id: number) => {
+  const handleMarkAsRead = (id: bigint) => {
     if (organizationId) {
       // Find the notification to move for immediate UI update
       const notificationToMove = unreadNotifications.find((n) => n.id === id);
@@ -346,7 +440,7 @@ export const NotificationsDropdown = () => {
         // Trigger the mutation
         markAsReadMutation.mutate({
           organizationId,
-          notificationIds: [id],
+          notificationIds: [Number(id)],
         });
       }
     }
@@ -358,7 +452,7 @@ export const NotificationsDropdown = () => {
       markAsReadMutation.mutate(
         {
           organizationId,
-          notificationIds,
+          notificationIds: notificationIds.map((id) => Number(id)),
         },
         {
           onSuccess: () => {
@@ -371,6 +465,9 @@ export const NotificationsDropdown = () => {
       );
     }
   };
+
+  const totalUnreadCount = unreadCount + myInvites.length;
+  const isTotalCountLoading = isUnreadCountLoading || isInvitesLoading;
 
   if (!organizationId || !organizationSlug) {
     return null;
@@ -386,12 +483,12 @@ export const NotificationsDropdown = () => {
           aria-label="Notifications"
         >
           <Bell className="size-4" />
-          {isUnreadCountLoading && (
+          {isTotalCountLoading && (
             <Skeleton className="absolute -top-1 -right-1 h-5 w-5 rounded-full" />
           )}
-          {!isUnreadCountLoading && unreadCount > 0 && (
+          {!isTotalCountLoading && totalUnreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[11px] font-medium text-primary-foreground">
-              {unreadCount}
+              {totalUnreadCount}
             </span>
           )}
         </Button>
@@ -406,30 +503,35 @@ export const NotificationsDropdown = () => {
       >
         <Tabs defaultValue="current" className="w-full">
           <div className="flex items-center justify-between border-b px-4 py-3">
-            <TabsList className="grid w-[180px] grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="current" className="flex items-center gap-2">
                 Current
               </TabsTrigger>
               <TabsTrigger value="history">History</TabsTrigger>
+              <TabsTrigger value="invites" className="relative">
+                Invites
+                {myInvites.length > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-[10px] font-medium text-white">
+                    {myInvites.length}
+                  </span>
+                )}
+              </TabsTrigger>
             </TabsList>
             {!isUnreadCountLoading && unreadCount > 0 && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="h-8 px-2 text-muted-foreground hover:text-primary"
+                      className="h-8 w-8 px-2 text-muted-foreground hover:text-primary"
                       onClick={handleClearAll}
                       disabled={markAsReadMutation.isPending}
                     >
                       <Trash2 className="mr-1 h-4 w-4" />
-                      Clear All
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>
-                    Mark all notifications as read
-                  </TooltipContent>
+                  <TooltipContent>Clear all notifications</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
@@ -461,6 +563,12 @@ export const NotificationsDropdown = () => {
               isFetchingNextPage={isFetchingNextRead}
               isLoading={isAuthLoading || isReadLoading}
             />
+          </TabsContent>
+          <TabsContent
+            value="invites"
+            className="mt-0 focus-visible:outline-none"
+          >
+            <InviteList invites={myInvites} refetchInvites={refetchInvites} />
           </TabsContent>
         </Tabs>
       </DropdownMenuContent>

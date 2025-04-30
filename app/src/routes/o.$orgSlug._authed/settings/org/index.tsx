@@ -64,6 +64,8 @@ function RouteComponent() {
     return null;
   }
 
+  const userRole = organization.membership.role;
+
   const handleDelete = () => {
     if (deleteConfirmation !== organization.slug) {
       toast.error(
@@ -217,162 +219,164 @@ function RouteComponent() {
         </Card>
 
         {/* Danger Zone */}
-        <Card className="border-destructive/10 bg-destructive/5 dark:border-destructive/20">
-          <CardHeader>
-            <CardTitle className="text-destructive dark:text-destructive/90">
-              Danger Zone
-            </CardTitle>
-            <CardDescription>
-              Irreversible and destructive actions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Dialog
-              open={isDeleteDialogOpen}
-              onOpenChange={setIsDeleteDialogOpen}
-            >
-              <DialogTrigger asChild>
-                <Button variant="destructive">Delete Organization</Button>
-              </DialogTrigger>
-              <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
-                <DialogHeader className="space-y-4">
-                  <DialogTitle className="flex items-center gap-2 text-destructive dark:text-destructive/90">
-                    <AlertTriangle className="h-5 w-5" />
-                    Delete Organization
-                  </DialogTitle>
-                  <DialogDescription className="text-base">
-                    Are you sure you want to delete{" "}
-                    <span className="font-medium text-foreground">
-                      {organization.name}
-                    </span>
-                    ? This action cannot be undone.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-6">
-                  <div className="rounded-lg border border-destructive/10 bg-destructive/5 p-4 text-sm text-destructive dark:border-destructive/20 dark:bg-destructive/20 dark:text-muted-foreground">
-                    All organization data, including projects, resources, and
-                    member access will be permanently deleted.
-                  </div>
-                  <div className="space-y-4">
-                    <Label
-                      htmlFor="confirmation"
-                      className="text-sm text-muted-foreground"
-                    >
-                      Please type{" "}
-                      <span className="font-mono font-medium text-foreground">
-                        {organization.slug}
-                      </span>{" "}
-                      to confirm
-                    </Label>
-                    <Input
-                      id="confirmation"
-                      value={deleteConfirmation}
-                      onChange={(e) => setDeleteConfirmation(e.target.value)}
-                      placeholder="Enter organization slug"
-                      className="mt-2"
-                    />
-                  </div>
-                </div>
-                <DialogFooter className="gap-2 sm:gap-0">
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      setIsDeleteDialogOpen(false);
-                      setDeleteConfirmation("");
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleDelete}
-                    disabled={deleteConfirmation !== organization.slug}
-                  >
-                    Continue
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            {/* Second Warning Dialog */}
-            <Dialog
-              open={isFinalWarningOpen}
-              onOpenChange={setIsFinalWarningOpen}
-            >
-              <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
-                <DialogHeader className="space-y-4">
-                  <DialogTitle className="flex items-center gap-2 text-destructive dark:text-destructive/90">
-                    <AlertTriangle className="h-5 w-5" />
-                    Second Confirmation Required
-                  </DialogTitle>
-                  <DialogDescription className="text-base">
-                    Please confirm one more time that you want to delete{" "}
-                    <span className="font-medium text-foreground">
-                      {organization.name}
-                    </span>
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-6">
-                  <div className="rounded-lg border border-destructive/10 bg-destructive/5 p-4 text-sm text-destructive dark:border-destructive/20 dark:bg-destructive/20 dark:text-muted-foreground">
+        {userRole === "OWNER" && (
+          <Card className="border-destructive/10 bg-destructive/5 dark:border-destructive/20">
+            <CardHeader>
+              <CardTitle className="text-destructive dark:text-destructive/90">
+                Danger Zone
+              </CardTitle>
+              <CardDescription>
+                Irreversible and destructive actions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Dialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button variant="destructive">Delete Organization</Button>
+                </DialogTrigger>
+                <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
+                  <DialogHeader className="space-y-4">
+                    <DialogTitle className="flex items-center gap-2 text-destructive dark:text-destructive/90">
+                      <AlertTriangle className="h-5 w-5" />
+                      Delete Organization
+                    </DialogTitle>
+                    <DialogDescription className="text-base">
+                      Are you sure you want to delete{" "}
+                      <span className="font-medium text-foreground">
+                        {organization.name}
+                      </span>
+                      ? This action cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-6">
+                    <div className="rounded-lg border border-destructive/10 bg-destructive/5 p-4 text-sm text-destructive dark:border-destructive/20 dark:bg-destructive/20 dark:text-muted-foreground">
+                      All organization data, including projects, resources, and
+                      member access will be permanently deleted.
+                    </div>
                     <div className="space-y-4">
-                      <p className="font-medium">This action will:</p>
-                      <ul className="list-disc space-y-2 pl-4">
-                        <li>Permanently delete all organization data</li>
-                        <li>Remove access for all team members</li>
-                        <li>Delete all projects and their resources</li>
-                        <li>Cancel any active subscriptions</li>
-                      </ul>
-                      <p className="pt-2 font-medium">
-                        This action cannot be undone.
-                      </p>
+                      <Label
+                        htmlFor="confirmation"
+                        className="text-sm text-muted-foreground"
+                      >
+                        Please type{" "}
+                        <span className="font-mono font-medium text-foreground">
+                          {organization.slug}
+                        </span>{" "}
+                        to confirm
+                      </Label>
+                      <Input
+                        id="confirmation"
+                        value={deleteConfirmation}
+                        onChange={(e) => setDeleteConfirmation(e.target.value)}
+                        placeholder="Enter organization slug"
+                        className="mt-2"
+                      />
                     </div>
                   </div>
-                  <div className="space-y-4">
-                    <Label
-                      htmlFor="finalConfirmation"
-                      className="text-sm text-muted-foreground"
+                  <DialogFooter className="gap-2 sm:gap-0">
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setIsDeleteDialogOpen(false);
+                        setDeleteConfirmation("");
+                      }}
                     >
-                      Please type{" "}
-                      <span className="font-mono font-medium text-foreground">
-                        DELETE {organization.slug}
-                      </span>{" "}
-                      to confirm
-                    </Label>
-                    <Input
-                      id="finalConfirmation"
-                      value={deleteConfirmation}
-                      onChange={(e) => setDeleteConfirmation(e.target.value)}
-                      placeholder="Enter DELETE followed by organization slug"
-                      className="mt-2"
-                    />
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDelete}
+                      disabled={deleteConfirmation !== organization.slug}
+                    >
+                      Continue
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* Second Warning Dialog */}
+              <Dialog
+                open={isFinalWarningOpen}
+                onOpenChange={setIsFinalWarningOpen}
+              >
+                <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
+                  <DialogHeader className="space-y-4">
+                    <DialogTitle className="flex items-center gap-2 text-destructive dark:text-destructive/90">
+                      <AlertTriangle className="h-5 w-5" />
+                      Second Confirmation Required
+                    </DialogTitle>
+                    <DialogDescription className="text-base">
+                      Please confirm one more time that you want to delete{" "}
+                      <span className="font-medium text-foreground">
+                        {organization.name}
+                      </span>
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-6">
+                    <div className="rounded-lg border border-destructive/10 bg-destructive/5 p-4 text-sm text-destructive dark:border-destructive/20 dark:bg-destructive/20 dark:text-muted-foreground">
+                      <div className="space-y-4">
+                        <p className="font-medium">This action will:</p>
+                        <ul className="list-disc space-y-2 pl-4">
+                          <li>Permanently delete all organization data</li>
+                          <li>Remove access for all team members</li>
+                          <li>Delete all projects and their resources</li>
+                          <li>Cancel any active subscriptions</li>
+                        </ul>
+                        <p className="pt-2 font-medium">
+                          This action cannot be undone.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <Label
+                        htmlFor="finalConfirmation"
+                        className="text-sm text-muted-foreground"
+                      >
+                        Please type{" "}
+                        <span className="font-mono font-medium text-foreground">
+                          DELETE {organization.slug}
+                        </span>{" "}
+                        to confirm
+                      </Label>
+                      <Input
+                        id="finalConfirmation"
+                        value={deleteConfirmation}
+                        onChange={(e) => setDeleteConfirmation(e.target.value)}
+                        placeholder="Enter DELETE followed by organization slug"
+                        className="mt-2"
+                      />
+                    </div>
                   </div>
-                </div>
-                <DialogFooter className="gap-2 sm:gap-0">
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      setIsFinalWarningOpen(false);
-                      setDeleteConfirmation("");
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleFinalDelete}
-                    disabled={
-                      deleteConfirmation !== `DELETE ${organization.slug}`
-                    }
-                    className="gap-2"
-                  >
-                    <AlertTriangle className="h-4 w-4" />
-                    Yes, Delete Organization
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </CardContent>
-        </Card>
+                  <DialogFooter className="gap-2 sm:gap-0">
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setIsFinalWarningOpen(false);
+                        setDeleteConfirmation("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleFinalDelete}
+                      disabled={
+                        deleteConfirmation !== `DELETE ${organization.slug}`
+                      }
+                      className="gap-2"
+                    >
+                      <AlertTriangle className="h-4 w-4" />
+                      Yes, Delete Organization
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </SettingsLayout>
   );

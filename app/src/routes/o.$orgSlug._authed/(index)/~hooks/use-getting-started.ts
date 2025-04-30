@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const getStorageKey = (orgSlug: string) => `getting-started-hidden-${orgSlug}`;
+const getStorageKey = (orgSlug: string) => `getting-started-hidden`;
 
 interface UseGettingStartedVisibilityProps {
   orgSlug: string;

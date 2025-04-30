@@ -157,7 +157,7 @@ export const MultiHistogramView: React.FC<{
   }
 
   return (
-    <div className="flex h-full w-full flex-col space-y-4 p-4">
+    <div className="flex h-full w-full flex-grow flex-col space-y-4 p-4">
       <h3 className="text-center font-mono text-sm font-medium">{logName}</h3>
       <div className="flex flex-1 flex-col space-y-4">
         <div ref={containerRef} className="relative flex-1">

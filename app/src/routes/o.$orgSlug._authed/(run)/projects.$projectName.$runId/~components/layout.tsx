@@ -47,7 +47,7 @@ const CancelRunButton = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const cancelRunMutation = useMutation(
-    trpc.runs.trigger.create.mutationOptions({
+    trpc.runs.trigger.createTrigger.mutationOptions({
       onSuccess: () => {
         toast.success("Run cancelled");
         queryClient.invalidateQueries({

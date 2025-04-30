@@ -11,6 +11,7 @@ import { Mail, Building2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TRPCClientError } from "@trpc/client";
 
 interface InvitesListProps {
   titleStyle?: string;
@@ -37,8 +38,13 @@ const InvitesList = ({ titleStyle, redirect }: InvitesListProps) => {
           window.location.reload();
         }
       },
-      onError: () => {
-        toast.error("Failed to accept invitation");
+      onError: (error) => {
+        if (error instanceof TRPCClientError) {
+          toast.error(error.message);
+        } else {
+          toast.error("Failed to accept invitation");
+        }
+        console.error(error);
       },
     }),
   );

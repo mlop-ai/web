@@ -1,9 +1,14 @@
-import type { MetricData } from "@/routes/o.$orgSlug._authed/(run)/projects.$projectName.$runId/~components/group/line-chart";
 import { LocalCache } from "./local-cache";
+// Types
+export type MetricDataPoint = {
+  step: number;
+  time: string;
+  value: number;
+};
 
 const MAX_DB_SIZE = 1024 * 1024 * 1024; // 1GB in bytes
 
-export const metricsCache = new LocalCache<MetricData>(
+export const metricsCache = new LocalCache<MetricDataPoint[]>(
   "metricsDB",
   "metrics",
   MAX_DB_SIZE,

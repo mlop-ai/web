@@ -72,6 +72,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { env } from "@/lib/env";
 
 interface SignInCardProps extends CardProps {
   /** Optional redirect URL after successful sign in */
@@ -293,98 +294,105 @@ export function SignInCard({
         <CardTitle className="text-base lg:text-lg">Sign in to</CardTitle>
         <CardDescription>Please sign in to continue.</CardDescription>
       </CardHeader>
+
       <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-row gap-4">{renderOAuthButtons()}</div>
-        <p
-          className={cn(
-            "flex items-center gap-x-3 text-sm text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border",
-            className,
-          )}
-          {...other}
-        >
-          Or continue with{" "}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span
-                  className={cn(
-                    "px-0.5 text-foreground",
-                    recentAuthMethod === "email" &&
-                      "underline decoration-primary/50",
-                  )}
-                >
-                  email
-                </span>
-              </TooltipTrigger>
-              {recentAuthMethod === "email" && (
-                <TooltipContent>
-                  <p>You used this before</p>
-                </TooltipContent>
+        <div className="flex flex-col gap-4">{renderOAuthButtons()}</div>
+        {env.VITE_IS_DOCKER && (
+          <>
+            <p
+              className={cn(
+                "flex items-center gap-x-3 text-sm text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border",
+                className,
               )}
-            </Tooltip>
-          </TooltipProvider>
-        </p>
-        <FormProvider {...methods}>
-          <form
-            className="flex flex-col gap-4"
-            onSubmit={methods.handleSubmit(onSubmit)}
-          >
-            <FormField
-              control={methods.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <InputWithAdornments
-                      {...field}
-                      type="email"
-                      maxLength={255}
-                      autoCapitalize="off"
-                      autoComplete="username"
-                      startAdornment={<MailIcon className="size-4 shrink-0" />}
-                      disabled={methods.formState.isSubmitting}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={methods.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <div className="flex flex-row items-center justify-between">
-                    <FormLabel>Password</FormLabel>
-                    <Link
-                      to="/auth/forgot-password"
-                      className="ml-auto inline-block text-sm underline"
+              {...other}
+            >
+              Or continue with{" "}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      className={cn(
+                        "px-0.5 text-foreground",
+                        recentAuthMethod === "email" &&
+                          "underline decoration-primary/50",
+                      )}
                     >
-                      Forgot password?
-                    </Link>
-                  </div>
-                  <FormControl>
-                    <InputPassword
-                      {...field}
-                      maxLength={72}
-                      autoCapitalize="off"
-                      autoComplete="current-password"
-                      startAdornment={<LockIcon className="size-4 shrink-0" />}
-                      disabled={methods.formState.isSubmitting}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {errorMessage && (
-              <Alert variant="destructive">
-                <div className="flex flex-row items-center gap-2">
-                  <AlertCircleIcon className="size-[18px] shrink-0" />
-                  <AlertDescription>
-                    {errorMessage}
-                    {/* {unverifiedEmail && (
+                      email
+                    </span>
+                  </TooltipTrigger>
+                  {recentAuthMethod === "email" && (
+                    <TooltipContent>
+                      <p>You used this before</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+            </p>
+            <FormProvider {...methods}>
+              <form
+                className="flex flex-col gap-4"
+                onSubmit={methods.handleSubmit(onSubmit)}
+              >
+                <FormField
+                  control={methods.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <InputWithAdornments
+                          {...field}
+                          type="email"
+                          maxLength={255}
+                          autoCapitalize="off"
+                          autoComplete="username"
+                          startAdornment={
+                            <MailIcon className="size-4 shrink-0" />
+                          }
+                          disabled={methods.formState.isSubmitting}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={methods.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <div className="flex flex-row items-center justify-between">
+                        <FormLabel>Password</FormLabel>
+                        <Link
+                          to="/auth/forgot-password"
+                          className="ml-auto inline-block text-sm underline"
+                        >
+                          Forgot password?
+                        </Link>
+                      </div>
+                      <FormControl>
+                        <InputPassword
+                          {...field}
+                          maxLength={72}
+                          autoCapitalize="off"
+                          autoComplete="current-password"
+                          startAdornment={
+                            <LockIcon className="size-4 shrink-0" />
+                          }
+                          disabled={methods.formState.isSubmitting}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {errorMessage && (
+                  <Alert variant="destructive">
+                    <div className="flex flex-row items-center gap-2">
+                      <AlertCircleIcon className="size-[18px] shrink-0" />
+                      <AlertDescription>
+                        {errorMessage}
+                        {/* {unverifiedEmail && (
                       <Link
                         href={`${routes.dashboard.auth.verifyEmail.Index}?email=${encodeURIComponent(unverifiedEmail)}`}
                         className={cn(
@@ -396,22 +404,24 @@ export function SignInCard({
                         <ArrowRightIcon className="size-3 shrink-0" />
                       </Link>
                     )} */}
-                  </AlertDescription>
-                </div>
-              </Alert>
-            )}
-            <Button
-              type="submit"
-              variant="default"
-              className="relative w-full"
-              disabled={!canSubmit}
-              loading={methods.formState.isSubmitting}
-              onClick={methods.handleSubmit(onSubmit)}
-            >
-              Sign in
-            </Button>
-          </form>
-        </FormProvider>
+                      </AlertDescription>
+                    </div>
+                  </Alert>
+                )}
+                <Button
+                  type="submit"
+                  variant="default"
+                  className="relative w-full"
+                  disabled={!canSubmit}
+                  loading={methods.formState.isSubmitting}
+                  onClick={methods.handleSubmit(onSubmit)}
+                >
+                  Sign in
+                </Button>
+              </form>
+            </FormProvider>
+          </>
+        )}
       </CardContent>
       <CardFooter className="flex justify-center gap-1 text-sm text-muted-foreground">
         <span>Don't have an account?</span>

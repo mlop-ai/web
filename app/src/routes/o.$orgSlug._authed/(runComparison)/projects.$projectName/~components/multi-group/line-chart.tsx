@@ -8,18 +8,9 @@ import { memo, useEffect } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { trpc, trpcClient } from "@/utils/trpc";
 import { useCheckDatabaseSize } from "@/lib/db/local-cache";
-import { metricsCache } from "@/lib/db/index";
+import { metricsCache, type MetricDataPoint } from "@/lib/db/index";
 import { useLocalQueries } from "@/lib/hooks/use-local-query";
 import { BYTES_LOGS } from "@/routes/o.$orgSlug._authed/(run)/projects.$projectName.$runId/~components/group/line-chart";
-
-// Types
-type MetricDataPoint = {
-  step: number;
-  time: string;
-  value: number;
-};
-
-type MetricResponse = MetricDataPoint[];
 
 const SYNC_REFRESH_INTERVAL = 5 * 1000; // 5 seconds
 const GC_TIME = 0; // Immediate garbage collection when query is inactive
@@ -91,7 +82,7 @@ export const MultiLineChart = memo(
     // Error state
     if (isError) {
       return (
-        <div className="flex h-96 flex-col items-center justify-center bg-red-500">
+        <div className="flex h-full w-full flex-grow flex-col items-center justify-center bg-red-500">
           <h2 className="text-2xl font-bold">{title}</h2>
           <p className="text-sm text-gray-200">Error fetching data</p>
         </div>
@@ -104,14 +95,14 @@ export const MultiLineChart = memo(
 
     // Initial loading state - only show when we have no data and queries are still loading
     if (isInitialLoading) {
-      return <Skeleton className="h-full w-full" />;
+      return <Skeleton className="h-full w-full flex-grow" />;
     }
 
     // Empty state - only if we have no data and all queries are done loading
     if (allQueriesDone && !hasAnyData) {
       return (
-        <div className="h-full">
-          <div className="flex h-full flex-col items-center justify-center bg-accent">
+        <div className="h-full w-full flex-grow">
+          <div className="flex h-full w-full flex-col items-center justify-center bg-accent">
             <h2 className="text-2xl font-bold">{title}</h2>
             <p className="text-sm text-gray-500">No data received yet</p>
           </div>
@@ -143,7 +134,7 @@ export const MultiLineChart = memo(
       return (
         <LineChart
           lines={chartData}
-          className="h-full min-h-96"
+          className="h-full min-h-96 w-full flex-grow"
           title={title}
           xlabel={"time"}
           ref={ref}
@@ -168,7 +159,7 @@ export const MultiLineChart = memo(
     return (
       <LineChart
         lines={chartData}
-        className="h-full min-h-96"
+        className="h-full w-full"
         title={title}
         xlabel={xlabel}
         ref={ref}

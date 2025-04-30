@@ -56,7 +56,7 @@ export const LineChartWithFetch = memo(
     // If no cached data is available yet and a fetch is in progress, show a skeleton.
     if (isLoading && !data) {
       return (
-        <Card className="h-96">
+        <Card className="h-full">
           <Skeleton className="h-full" />
         </Card>
       );
@@ -65,22 +65,20 @@ export const LineChartWithFetch = memo(
     // Render error state.
     if (isError) {
       return (
-        <Card className="flex h-96 flex-col items-center justify-center bg-red-500">
+        <div className="flex h-full flex-grow flex-col items-center justify-center bg-red-500">
           <h2 className="text-2xl font-bold">{logName}</h2>
           <p className="text-sm text-gray-200">Error fetching data</p>
-        </Card>
+        </div>
       );
     }
 
     // Render empty state.
     if (!data || data.length === 0) {
       return (
-        <Card className="h-96">
-          <div className="flex h-full flex-col items-center justify-center bg-accent">
-            <h2 className="text-2xl font-bold">{logName}</h2>
-            <p className="text-sm text-gray-500">No data received yet</p>
-          </div>
-        </Card>
+        <div className="flex h-full flex-grow flex-col items-center justify-center bg-accent">
+          <h2 className="text-2xl font-bold">{logName}</h2>
+          <p className="text-sm text-gray-500">No data received yet</p>
+        </div>
       );
     }
 
@@ -100,16 +98,13 @@ export const LineChartWithFetch = memo(
       );
 
       return (
-        <Card className="h-96">
-          <LineChart
-            lines={[chartData]}
-            className="h-full min-h-96"
-            title={logName}
-            isDateTime={true}
-            xlabel="time"
-            ref={setChartRef(index)}
-          />
-        </Card>
+        <LineChart
+          lines={[chartData]}
+          title={logName}
+          isDateTime={true}
+          xlabel="time"
+          ref={setChartRef(index)}
+        />
       );
     }
 
@@ -121,15 +116,13 @@ export const LineChartWithFetch = memo(
     };
 
     return (
-      <Card className="h-96">
-        <LineChart
-          lines={[chartData]}
-          className="h-full min-h-96"
-          title={logName}
-          xlabel="step"
-          ref={setChartRef(index)}
-        />
-      </Card>
+      <LineChart
+        lines={[chartData]}
+        className="h-full"
+        title={logName}
+        xlabel="step"
+        ref={setChartRef(index)}
+      />
     );
   },
 );
