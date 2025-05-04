@@ -31,7 +31,7 @@ const mainNavItems = [
     matchPattern: /^projects\/[^/]+$/,
     icon: RiBubbleChartFill,
     // TODO: Add link
-    link: "https://docs.mlop.ai/docs/experiments",
+    link: "https://docs.mlop.ai/docs/experiments/visualizations",
     description:
       "Overview of the run, you can view the configs and metadata and also shut down the run remotely",
   },

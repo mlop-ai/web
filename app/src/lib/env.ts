@@ -7,12 +7,12 @@ const envSchema = z.object({
     (val) => val === "true",
     z.boolean().default(false),
   ),
+  VITE_POSTHOG_KEY: z.string().optional(),
+  VITE_POSTHOG_HOST: z.string().optional(),
 });
 
 // Validate environment variables
 const parsedEnv = envSchema.safeParse(import.meta.env);
-
-console.log("parsedEnv", parsedEnv);
 
 if (!parsedEnv.success) {
   console.error(

@@ -12,6 +12,8 @@ import type { QueryClient } from "@tanstack/react-query";
 import { trpc } from "@/utils/trpc";
 import type { inferOutput } from "@trpc/tanstack-react-query";
 import { env } from "@/lib/env";
+import { PostHogProvider } from "posthog-js/react";
+
 type Auth = inferOutput<typeof trpc.auth>;
 export interface RouterAppContext {
   auth: Auth;
@@ -45,9 +47,16 @@ function RootComponent() {
   return (
     <>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <HeadContent />
-        <Outlet />
-        <Toaster richColors />
+        <PostHogProvider
+          apiKey={env.VITE_POSTHOG_KEY!}
+          options={{
+            api_host: env.VITE_POSTHOG_HOST,
+          }}
+        >
+          <HeadContent />
+          <Outlet />
+          <Toaster richColors />
+        </PostHogProvider>
       </ThemeProvider>
       {env.VITE_ENV === "development" && (
         <>

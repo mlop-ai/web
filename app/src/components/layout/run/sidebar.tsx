@@ -28,7 +28,7 @@ const mainNavItems = [
     href: "/projects/$projectName/$runId/summary",
     matchPattern: /^projects\/[^/]+\/[^/]+\/summary$/,
     icon: RiInformationFill,
-    link: "https://docs.mlop.ai/docs/experiments",
+    link: "https://docs.mlop.ai/docs/experiments/summary",
     description:
       "Overview of the run, you can view the configs and metadata and also shut down the run remotely",
   },
@@ -61,7 +61,7 @@ const mainNavItems = [
     href: "/projects/$projectName/$runId/graph",
     matchPattern: /^projects\/[^/]+\/[^/]+\/graph$/,
     icon: RiNodeTree,
-    link: "https://docs.mlop.ai/docs/experiments/model-graph",
+    link: "https://docs.mlop.ai/docs/experiments/visualizations/model-graph",
     description: "Visual graph of the model architecture",
   },
 ];

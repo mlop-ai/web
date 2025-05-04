@@ -22,7 +22,8 @@ export function useDuration({
   const isCompleted =
     runStatus === "COMPLETED" ||
     runStatus === "TERMINATED" ||
-    runStatus === "FAILED";
+    runStatus === "FAILED" ||
+    runStatus === "CANCELLED";
 
   useEffect(() => {
     const updateDuration = () => {

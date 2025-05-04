@@ -56,6 +56,11 @@ export function OrgDetails({
     if (typeof window !== "undefined") {
       document.body.style.removeProperty("pointer-events");
     }
+    // Ensure all queries and cache are completely invalidated
+    queryClient.clear();
+    queryClient.cancelQueries();
+    queryClient.resetQueries({ type: "all" });
+    queryClient.invalidateQueries({ refetchType: "none", type: "all" });
     window.location.href = href;
   };
 

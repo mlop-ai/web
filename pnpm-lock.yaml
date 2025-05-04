@@ -158,6 +158,9 @@ importers:
       lucide-react:
         specifier: ^0.487.0
         version: 0.487.0(react@19.1.0)
+      posthog-js:
+        specifier: ^1.237.0
+        version: 1.237.0
       prism-react-renderer:
         specifier: ^2.4.1
         version: 2.4.1(react@19.1.0)
@@ -2657,6 +2660,9 @@ packages:
     resolution: {integrity: sha512-yCEafptTtb4bk7GLEQoM8KVJpxAfdBJYaXyzQEgQQQgYrZiDp8SJmGKlYza6CYjEDNstAdNdKA3UuoULlEbS6w==}
     engines: {node: '>=12.13'}
 
+  core-js@3.42.0:
+    resolution: {integrity: sha512-Sz4PP4ZA+Rq4II21qkNqOEDTDrCvcANId3xpIgB34NDkWc3UduWj2dqEtN9yZIq8Dk3HyPI33x9sqqU5C8sr0g==}
+
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
@@ -2912,6 +2918,9 @@ packages:
   fetch-blob@3.2.0:
     resolution: {integrity: sha512-7yAQpD2UMJzLi1Dqv7qFYnPbaPx7ZfFK6PiIxQ4PfkGPyNyl2Ugx+a/umUonmKqjhM4DnfbMvdX6otXq83soQQ==}
     engines: {node: ^12.20 || >= 14.13}
+
+  fflate@0.4.8:
+    resolution: {integrity: sha512-FJqqoDBR00Mdj9ppamLa/Y7vxm+PRmNWA67N846RvsoYVMKB4q3y/de5PA7gUmRMYK/8CMz2GDZQmCRN1wBcWA==}
 
   fill-range@7.1.1:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
@@ -3204,6 +3213,20 @@ packages:
   postcss@8.5.3:
     resolution: {integrity: sha512-dle9A3yYxlBSrt8Fu+IpjGT8SY8hN0mlaA6GY8t0P5PjIOZemULz/E2Bnm/2dcUOena75OTNkHI76uZBNUUq3A==}
     engines: {node: ^10 || ^12 || >=14}
+
+  posthog-js@1.237.0:
+    resolution: {integrity: sha512-DyZfwDRz405cKKskL22CXvc9EpkBmuM9lCOYsZO3L1/zXu7IGiP9nNlLaxlzy7K/8mHxQ3szoy/DBSw/zXL1pw==}
+    peerDependencies:
+      '@rrweb/types': 2.0.0-alpha.17
+      rrweb-snapshot: 2.0.0-alpha.17
+    peerDependenciesMeta:
+      '@rrweb/types':
+        optional: true
+      rrweb-snapshot:
+        optional: true
+
+  preact@10.26.5:
+    resolution: {integrity: sha512-fmpDkgfGU6JYux9teDWLhj9mKN55tyepwYbxHgQuIxbWQzgFg5vk7Mrrtfx7xRxq798ynkY4DDDxZr235Kk+4w==}
 
   prettier-plugin-tailwindcss@0.6.11:
     resolution: {integrity: sha512-YxaYSIvZPAqhrrEpRtonnrXdghZg1irNg4qrjboCXrpybLWVs55cW2N3juhspVJiO0JBvYJT8SYsJpc8OQSnsA==}
@@ -3625,6 +3648,9 @@ packages:
   web-streams-polyfill@3.3.3:
     resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
     engines: {node: '>= 8'}
+
+  web-vitals@4.2.4:
+    resolution: {integrity: sha512-r4DIlprAGwJ7YM11VZp4R884m0Vmgr6EAKe3P+kO0PPj3Unqyvv59rczf6UiGcb9Z8QxZVcqKNwv/g0WNdWwsw==}
 
   webpack-virtual-modules@0.6.2:
     resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
@@ -6331,6 +6357,8 @@ snapshots:
     dependencies:
       is-what: 4.1.16
 
+  core-js@3.42.0: {}
+
   cross-spawn@7.0.6:
     dependencies:
       path-key: 3.1.1
@@ -6561,6 +6589,8 @@ snapshots:
       node-domexception: 1.0.0
       web-streams-polyfill: 3.3.3
     optional: true
+
+  fflate@0.4.8: {}
 
   fill-range@7.1.1:
     dependencies:
@@ -6801,6 +6831,15 @@ snapshots:
       nanoid: 3.3.11
       picocolors: 1.1.1
       source-map-js: 1.2.1
+
+  posthog-js@1.237.0:
+    dependencies:
+      core-js: 3.42.0
+      fflate: 0.4.8
+      preact: 10.26.5
+      web-vitals: 4.2.4
+
+  preact@10.26.5: {}
 
   prettier-plugin-tailwindcss@0.6.11(prettier@3.5.3):
     dependencies:
@@ -7129,6 +7168,8 @@ snapshots:
 
   web-streams-polyfill@3.3.3:
     optional: true
+
+  web-vitals@4.2.4: {}
 
   webpack-virtual-modules@0.6.2: {}
 

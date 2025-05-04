@@ -6,6 +6,8 @@ export const LOG_GROUP_MAPPING: Record<RunLogType, string> = {
   IMAGE: "media",
   VIDEO: "media",
   FILE: "files",
+  TEXT: "files",
+  ARTIFACT: "files",
   HISTOGRAM: "histogram",
   TABLE: "table",
   DATA: "data",

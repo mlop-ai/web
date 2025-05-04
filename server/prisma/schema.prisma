@@ -259,6 +259,8 @@ enum RunLogType {
   VIDEO
   AUDIO
   FILE
+  TEXT
+  ARTIFACT
   HISTOGRAM
   TABLE
   DATA
