@@ -60,19 +60,19 @@ router.post(
     // Create context manually for tRPC-style functions
     const ctx = await createContext({ hono: c });
     // Check if the organization is at limit
-    const [tableUsage, fileUsage, orgLimits] = await Promise.all([
-      getDataUsageQuery(ctx, apiKey.organization.id),
-      getFileDataUsageQuery(ctx, apiKey.organization.id),
-      getOrgLimits(ctx, apiKey.organization.id),
-    ]);
+    // const [tableUsage, fileUsage, orgLimits] = await Promise.all([
+    //   getDataUsageQuery(ctx, apiKey.organization.id),
+    //   getFileDataUsageQuery(ctx, apiKey.organization.id),
+    //   getOrgLimits(ctx, apiKey.organization.id),
+    // ]);
 
-    const totalUsage =
-      tableUsage.reduce((acc, curr) => acc + curr.estimated_size_gb, 0) +
-      fileUsage;
+    // const totalUsage =
+    //   tableUsage.reduce((acc, curr) => acc + curr.estimated_size_gb, 0) +
+    //   fileUsage;
 
-    if (totalUsage > orgLimits.dataUsageGB) {
-      return c.json({ error: "Organization is at limit" }, 400);
-    }
+    // if (totalUsage > orgLimits.dataUsageGB) {
+    //   return c.json({ error: "Organization is at limit" }, 400);
+    // }
 
     // Find or create project in the organization
     const project = await ctx.prisma.projects.upsert({

@@ -69,10 +69,15 @@ export function useNormalizedHistogramData(
     const globalBinWidth = (globalMax - globalMin) / maxBinCount;
 
     const normalized = runHistograms.map((run) => {
-      // Calculate the maximum frequency for this run across all steps
-      const runMaxFreq = Math.max(
-        ...run.data.flatMap((step) => step.histogramData.freq),
-      );
+      // Calculate the maximum frequency for this run across all steps iteratively
+      let runMaxFreq = 0;
+      for (const step of run.data) {
+        for (const freq of step.histogramData.freq) {
+          if (freq > runMaxFreq) {
+            runMaxFreq = freq;
+          }
+        }
+      }
 
       return {
         ...run,
@@ -127,16 +132,22 @@ export function useNormalizedHistogramData(
       };
     });
 
+    // Calculate global max frequency iteratively
+    let globalMaxFreq = 0;
+    for (const run of normalized) {
+      for (const step of run.data) {
+        for (const freq of step.histogramData.freq) {
+          if (freq > globalMaxFreq) {
+            globalMaxFreq = freq;
+          }
+        }
+      }
+    }
+
     const rangeBuffer = (globalMax - globalMin) * 0.1;
 
     return {
-      globalMaxFreq: Math.max(
-        ...normalized.map((run) =>
-          Math.max(
-            ...run.data.map((step) => Math.max(...step.histogramData.freq)),
-          ),
-        ),
-      ), // Keep global max for reference
+      globalMaxFreq,
       xAxisRange: {
         min: globalMin - rangeBuffer,
         max: globalMax + rangeBuffer,

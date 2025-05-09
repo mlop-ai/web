@@ -1,6 +1,17 @@
 import { redirect } from "@tanstack/react-router";
-import { queryClient, trpc } from "@/utils/trpc";
+import { queryClient, trpc, trpcClient } from "@/utils/trpc";
 import { setActiveOrg } from "./org";
+import { bustLocalCache, ensureLocalQuery } from "@/lib/hooks/use-local-query";
+import { LocalCache } from "@/lib/db/local-cache";
+
+type AuthData = Awaited<ReturnType<typeof trpcClient.auth.query>>;
+
+// Create auth-specific local cache with a 10MB size limit
+const authCache = new LocalCache<AuthData>("auth", "auth", 1024 * 1024 * 10);
+
+export const bustAuthCache = async () => {
+  await bustLocalCache(authCache, trpc.auth.queryKey());
+};
 
 /**
  * Options for controlling authentication check behavior
@@ -10,6 +21,8 @@ interface AuthCheckOptions {
   isOnBoardingPage?: boolean;
   /** Optional search parameters for redirects */
   search?: { redirect: string } | {};
+  /** Force fresh data fetch bypassing cache */
+  forceFresh?: boolean;
 }
 
 /**
@@ -22,7 +35,16 @@ interface AuthCheckOptions {
  * @throws Redirects to onboarding if user hasn't completed onboarding
  */
 export const userAuthCheck = async (options?: AuthCheckOptions) => {
-  const auth = await queryClient.ensureQueryData(trpc.auth.queryOptions());
+  // Use ensureLocalQuery to leverage IndexedDB caching
+
+  const start = performance.now();
+  const auth = await ensureLocalQuery<AuthData>(queryClient, {
+    queryKey: trpc.auth.queryKey(),
+    queryFn: trpcClient.auth.query,
+    staleTime: 1000 * 60, // 1 minutes cache unless forced fresh
+    localCache: authCache,
+  });
+
   const search = options?.search;
 
   if (!auth) {
@@ -62,7 +84,7 @@ export const orgAuthCheck = async (
   const search = options?.search;
 
   // First check if the org exists in allOrgs
-  const org = allOrgs.find((org) => org.slug === orgSlug);
+  const org = allOrgs.find((o) => o.slug === orgSlug);
   if (!org) {
     throw redirect({ to: "/o", search });
   }
@@ -77,7 +99,7 @@ export const orgAuthCheck = async (
     // Invalidate the queries
     await queryClient.invalidateQueries();
 
-    const auth = await userAuthCheck(options);
+    const auth = await userAuthCheck({ ...options, forceFresh: true });
     if (!auth?.activeOrganization?.id) {
       throw redirect({ to: "/o", search });
     }

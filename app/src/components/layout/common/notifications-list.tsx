@@ -523,8 +523,8 @@ export const NotificationsDropdown = () => {
                   <TooltipTrigger asChild>
                     <Button
                       variant="outline"
-                      size="sm"
-                      className="h-8 w-8 px-2 text-muted-foreground hover:text-primary"
+                      size="lg"
+                      className="ml-3 h-9 w-9 px-1 text-muted-foreground hover:text-primary"
                       onClick={handleClearAll}
                       disabled={markAsReadMutation.isPending}
                     >

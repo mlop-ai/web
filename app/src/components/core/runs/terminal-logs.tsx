@@ -262,7 +262,7 @@ const LogEntryComponent = memo(
         </div>
         <div className="w-[1px] bg-border" />
         <div
-          className="flex-1 px-4 py-1 break-all text-foreground"
+          className="flex-1 px-4 py-1 break-all whitespace-pre-wrap text-foreground"
           dangerouslySetInnerHTML={{ __html: highlightedText }}
         />
       </div>

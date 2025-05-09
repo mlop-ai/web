@@ -3,14 +3,16 @@ import {
   useInfiniteQuery,
   useQueries,
   useQuery,
+  useQueryClient,
   useSuspenseQuery,
+  type InfiniteData,
   type UseQueryOptions,
   type UseQueryResult,
 } from "@tanstack/react-query";
 import { useLiveQuery } from "dexie-react-hooks";
 import type { TRPCQueryKey } from "@trpc/tanstack-react-query";
 import { LocalCache } from "@/lib/db/local-cache";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 interface LocalQueryOptions<T> extends UseQueryOptions<T> {
   queryKey: TRPCQueryKey;
@@ -47,10 +49,11 @@ export function useLocalQuery<T>({
     () => localCache.getData(storageKey),
     [storageKey],
   );
+  // console.log(cachedRecord);
   // Use cached data as placeholder (or initialData).
   const placeholderData = cachedRecord ? cachedRecord.data : undefined;
 
-  const cachedQueryFn = useCallback(async () => {
+  const cachedQueryFn = async () => {
     // Re-read cached record (in case it was updated)
     const cached = await localCache.getData(storageKey);
     // Use cached data if it's already finished or if it has been recently synced.
@@ -68,7 +71,7 @@ export function useLocalQuery<T>({
       await localCache.setData(storageKey, data);
     }
     return data;
-  }, [queryFn, localCache, storageKey, staleTime]);
+  };
 
   return useQuery({
     queryKey: queryKey,
@@ -233,22 +236,27 @@ export async function ensureLocalQuery<T>(
   queryClient: QueryClient,
   options: LocalQueryOptions<T>,
   onlyUseCache = false,
+  forceFresh = false,
 ) {
   const storageKey = stringifyQueryKey(options.queryKey);
+
   const cachedQueryFn = async () => {
-    // Re-read the local cache in case it has been updated meanwhile.
+    // Re-read the local cache in case it has been updated meanwhile
     const cached = await options.localCache.getData(storageKey);
     // If the cache is either marked finished or has been synced recently, return it.
     if (onlyUseCache) {
       return cached?.data;
     }
-    if (
+
+    const isFresh =
       cached?.finishedAt ||
       (cached?.syncedAt &&
-        new Date(cached.syncedAt) > new Date(Date.now() - options.staleTime))
-    ) {
+        new Date(cached.syncedAt) > new Date(Date.now() - options.staleTime));
+
+    if (isFresh && !forceFresh) {
       return cached.data;
     }
+
     // Otherwise, call the fresh fetch function.
     const data = await options.queryFn();
     if (data) {
@@ -259,7 +267,7 @@ export async function ensureLocalQuery<T>(
   };
 
   // Use prefetchQuery to fetch fresh data and update both caches.
-  return queryClient.ensureQueryData({
+  return queryClient.fetchQuery({
     queryKey: options.queryKey,
     staleTime: options.staleTime,
     queryFn: () => cachedQueryFn(),
@@ -275,24 +283,11 @@ export async function ensureLocalQuery<T>(
  * whenever new data is fetched.
  */
 
-export interface LocalInfiniteQueryOptions<T> {
+interface LocalInfiniteQueryOptions<T> {
   queryKey: TRPCQueryKey;
-  /**
-   * The query function should accept an object with a pageParam as provided by React Query.
-   */
   queryFn: ({ pageParam }: { pageParam?: unknown }) => Promise<T>;
-  /**
-   * How long cached records remain fresh.
-   */
   staleTime: number;
-  /**
-   * An instance of your local cache which should support getData and setData.
-   * In our case, it is backed by Dexie.
-   */
-  localCache: LocalCache<T>;
-  /**
-   * Optional function to determine the next page parameter.
-   */
+  localCache: LocalCache<InfiniteData<T>>;
   getNextPageParam?: (lastPage: T, pages: T[]) => unknown;
 }
 
@@ -303,32 +298,116 @@ export function useLocalInfiniteQuery<T>({
   localCache,
   getNextPageParam,
 }: LocalInfiniteQueryOptions<T>) {
-  // Create a storage key for the entire infinite query.
   const storageKey = stringifyQueryKey(queryKey);
 
-  // Read the cached infinite query data reactively.
-  // It is assumed that localCache.getData(storageKey) returns either undefined or
-  // an object that follows the structure used by React Query for infinite queries,
-  // for example: { pages: T[], pageParams: unknown[] }
-  const cachedRecord = useLiveQuery(
-    () => localCache.getData(storageKey),
-    [storageKey],
-  );
-  const initialData = cachedRecord ? cachedRecord.data : undefined;
+  // Get cached record reactively using Dexie's useLiveQuery
+  const cachedRecord = useLiveQuery(() => {
+    return localCache.getData(storageKey);
+  }, [storageKey]);
 
-  // @ts-ignore
-  return useInfiniteQuery({
+  const initialData = cachedRecord?.data;
+
+  const placeholderData = initialData && {
+    pages: initialData.pages,
+    pageParams: initialData.pageParams,
+  };
+
+  // Use useInfiniteQuery with the cached data as initialData
+  const { data, ...rest } = useInfiniteQuery({
     queryKey,
     queryFn,
+    // @ts-ignore No clue why this is complaining.
     getNextPageParam,
     staleTime,
-    // For infinite queries, React Query supports initialData
-    // which should match the shape: { pages, pageParams }
-    initialData,
-    // @ts-ignore
-    onSuccess: (data) => {
-      // Update the local cache with the aggregated infinite query data.
-      localCache.setData(storageKey, data);
-    },
+    placeholderData,
   });
+
+  // Update the cache whenever the query data changes
+  useEffect(() => {
+    if (data) {
+      localCache.setData(storageKey, data);
+    }
+  }, [data, storageKey, localCache]);
+
+  return { data, ...rest };
 }
+
+/**
+ * Options for prefetching an infinite query with local caching.
+ */
+interface PrefetchLocalInfiniteQueryOptions<T> {
+  queryKey: TRPCQueryKey;
+  queryFn: ({ pageParam }: { pageParam?: unknown }) => Promise<T>;
+  staleTime: number;
+  localCache: LocalCache<InfiniteData<T>>;
+  getNextPageParam: (lastPage: T, pages: T[]) => unknown;
+  pagesToPrefetch?: number; // Optional number of pages to prefetch, defaults to 1
+}
+
+/**
+ * Prefetches an infinite query, using local cache if available and fresh.
+ * Fetches a specified number of pages and updates both query cache and local cache.
+ *
+ * @param queryClient - The TanStack Query client instance.
+ * @param options - Configuration options for the infinite query.
+ * @param onlyUseCache - If true, only use cached data without fetching fresh data.
+ * @param pagesToPrefetch - Number of pages to prefetch (defaults to 1).
+ */
+export async function prefetchLocalInfiniteQuery<T>(
+  queryClient: QueryClient,
+  options: PrefetchLocalInfiniteQueryOptions<T>,
+  onlyUseCache = false,
+  pagesToPrefetch = 1,
+) {
+  const { queryKey, queryFn, staleTime, localCache, getNextPageParam } =
+    options;
+
+  const storageKey = stringifyQueryKey(queryKey);
+
+  // Check if there's cached data in the local cache
+  const cached = await localCache.getData(storageKey);
+  const isFresh =
+    cached?.finishedAt ||
+    (cached?.syncedAt &&
+      new Date(cached.syncedAt) > new Date(Date.now() - staleTime));
+
+  // If onlyUseCache is true or cached data is fresh, use it to set the query cache
+  if (onlyUseCache || (isFresh && cached?.data)) {
+    queryClient.setQueryData<InfiniteData<T>>(queryKey, cached?.data);
+    return;
+  }
+
+  // Fetch fresh data for the specified number of pages
+  let pageParam: unknown = undefined;
+  const pages: T[] = [];
+  const pageParams: unknown[] = [];
+
+  for (let i = 0; i < pagesToPrefetch; i++) {
+    const pageData = await queryFn({ pageParam });
+    if (!pageData) break; // Stop if no data is returned
+    pages.push(pageData);
+    pageParams.push(pageParam);
+    pageParam = getNextPageParam(pageData, pages);
+    if (!pageParam) break; // Stop if there's no next page
+  }
+
+  // Construct the InfiniteData structure
+  const infiniteData: InfiniteData<T> = {
+    pages,
+    pageParams,
+  };
+
+  // Update the query cache with the fetched data
+  queryClient.setQueryData<InfiniteData<T>>(queryKey, infiniteData);
+
+  // Update the local cache with the fetched data
+  await localCache.setData(storageKey, infiniteData);
+}
+
+export const bustLocalCache = async (
+  localCache: LocalCache<unknown>,
+  queryKey: TRPCQueryKey,
+) => {
+  const storageKey = stringifyQueryKey(queryKey);
+  await localCache.setData(storageKey, null);
+};

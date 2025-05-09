@@ -16,7 +16,6 @@ import { trpc } from "@/utils/trpc";
 import { useQuery } from "@tanstack/react-query";
 import { toReactFlowElements, type ModuleDataEntry } from "./model-graph-utils";
 import BaseNode from "./nodes/base-node";
-import { useGetHistogram } from "../~queries/get-histogram";
 import { HistogramView } from "./group/histogram-view";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -241,6 +240,7 @@ export default function GraphFlow({
           className="bg-gray-50 dark:bg-gray-900"
         >
           <Background gap={12} size={1} color="#aaa" />
+
           <NodeDialog
             node={selectedNode}
             position={dialogPosition}
@@ -253,6 +253,7 @@ export default function GraphFlow({
             runId={runId}
           />
         </ReactFlow>
+        <MiniMap maskColor="rgb(0,0,0, 0.3)" pannable zoomable />
       </ReactFlowProvider>
     </div>
   );

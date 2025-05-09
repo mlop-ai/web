@@ -1,16 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import type { trpc } from "@/utils/trpc";
-import type { ColumnDef } from "@tanstack/react-table";
-import type { inferOutput } from "@trpc/tanstack-react-query";
+import type { ColumnDef, Row } from "@tanstack/react-table";
 import { Eye, EyeOff } from "lucide-react";
 import { ColorPicker } from "@/components/ui/color-picker";
 import { SELECTED_RUNS_LIMIT } from "./config";
 import { StatusIndicator } from "@/components/layout/dashboard/sidebar";
-
-export type Run = inferOutput<typeof trpc.runs.list>["runs"][0];
+import type { Run } from "../../~queries/list-runs";
 
 type RunId = string;
-
 type RunColor = string;
 
 interface ColumnsProps {
@@ -21,6 +17,34 @@ interface ColumnsProps {
   runColors: Record<RunId, RunColor>;
 }
 
+function getRowRange<T>(rows: Array<Row<T>>, idA: string, idB: string) {
+  const range: Array<Row<T>> = [];
+  let foundStart = false;
+  let foundEnd = false;
+  for (let index = 0; index < rows.length; index += 1) {
+    const row = rows[index];
+    if (row.id === idA || row.id === idB) {
+      if (foundStart) {
+        foundEnd = true;
+      }
+      if (!foundStart) {
+        foundStart = true;
+      }
+    }
+    if (foundStart) {
+      range.push(row);
+    }
+    if (foundEnd) {
+      break;
+    }
+  }
+  // added this check
+  if (!foundEnd) {
+    throw Error("Could not find whole row range");
+  }
+  return range;
+}
+
 export const columns = ({
   orgSlug,
   projectName,
@@ -28,6 +52,7 @@ export const columns = ({
   onColorChange,
   runColors,
 }: ColumnsProps): ColumnDef<Run>[] => {
+  let lastSelectedId: string = "";
   return [
     {
       id: "select",
@@ -65,10 +90,26 @@ export const columns = ({
         const isSelected = row.getIsSelected();
         const isDisabled = totalSelected >= SELECTED_RUNS_LIMIT && !isSelected;
 
-        const handleClick = () => {
-          const newValue = !isSelected;
-          row.toggleSelected(newValue);
-          onSelectionChange(row.original.id, newValue);
+        const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+          if (!e.shiftKey) {
+            const newValue = !isSelected;
+            row.toggleSelected(newValue);
+            onSelectionChange(row.original.id, newValue);
+          } else {
+            try {
+              const { rows, rowsById } = table.getRowModel();
+
+              const rowsToToggle = getRowRange(rows, row.id, lastSelectedId);
+              const isLastSelected = rowsById[lastSelectedId].getIsSelected();
+              rowsToToggle.forEach((row) => {
+                row.toggleSelected(isLastSelected);
+                onSelectionChange(row.original.id, isLastSelected);
+              });
+            } catch (e) {
+              row.toggleSelected(!row.getIsSelected());
+            }
+          }
+          lastSelectedId = row.id;
         };
 
         return (
@@ -81,7 +122,7 @@ export const columns = ({
             {isSelected ? (
               <Eye className="h-4 w-4" />
             ) : (
-              <EyeOff className="h-4 w-4 text-muted-foreground" />
+              <EyeOff className="h-4 w-4 text-muted-foreground transition-colors hover:text-primary/80" />
             )}
           </button>
         );

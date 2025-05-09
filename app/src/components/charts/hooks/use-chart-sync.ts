@@ -12,6 +12,7 @@ export const useChartSync = (
 ): ChartSyncHookResult => {
   const chartRefs = useRef<ReactECharts[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const connectionsRef = useRef<string[]>([]);
 
   const setChartRef = useCallback(
     (index: number) => (ref: ReactECharts | null) => {
@@ -42,28 +43,42 @@ export const useChartSync = (
 
     if (instances.length > 0) {
       try {
-        if (isConnected) {
-          echarts.disconnect(groupId);
+        // Disconnect any existing connections
+        connectionsRef.current.forEach((id) => {
+          try {
+            echarts.disconnect(id);
+          } catch {} // Ignore disconnection errors
+        });
+        connectionsRef.current = [];
+
+        // Set group and connect
+        instances.forEach((chart) => {
+          if (chart) chart.group = groupId;
+        });
+
+        echarts.connect(groupId);
+        connectionsRef.current.push(groupId);
+
+        if (!isConnected) {
+          setIsConnected(true);
         }
-      } catch {} // Ignore disconnection errors
-
-      instances.forEach((chart) => {
-        if (chart) chart.group = groupId;
-      });
-
-      echarts.connect(groupId);
-      setIsConnected(true);
+      } catch (e) {
+        console.warn("Failed to connect charts", e);
+      }
     }
 
     return () => {
       try {
-        echarts.disconnect(groupId);
+        connectionsRef.current.forEach((id) => {
+          echarts.disconnect(id);
+        });
+        connectionsRef.current = [];
         setIsConnected(false);
       } catch (e) {
         console.warn("Failed to disconnect charts", e);
       }
     };
-  }, [groupId, loadedCharts, isConnected]);
+  }, [groupId, loadedCharts]); // Removed isConnected from dependencies
 
   return { setChartRef };
 };

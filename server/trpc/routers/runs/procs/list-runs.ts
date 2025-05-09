@@ -6,14 +6,13 @@ export const listRunsProcedure = protectedOrgProcedure
   .input(
     z.object({
       projectName: z.string(),
-      limit: z.number().min(1).max(100).default(10),
+      limit: z.number().min(1).max(200).default(10),
       cursor: z.number().optional(),
-      direction: z.enum(["asc", "desc"]).default("desc"),
+      direction: z.enum(["forward", "backward"]).default("forward"),
     })
   )
   .query(async ({ ctx, input }) => {
-    console.log(input);
-    const runs = await ctx.prisma.runs.findMany({
+    let runs = await ctx.prisma.runs.findMany({
       include: {
         logs: true,
       },
@@ -24,7 +23,7 @@ export const listRunsProcedure = protectedOrgProcedure
         organizationId: input.organizationId,
       },
       orderBy: {
-        createdAt: input.direction,
+        createdAt: input.direction === "forward" ? "desc" : "asc",
       },
       take: input.limit,
       cursor: input.cursor ? { id: input.cursor } : undefined,

@@ -1,68 +1,77 @@
-import { queryClient, trpc, trpcClient } from "@/utils/trpc";
-import {
-  prefetchLocalQuery,
-  useLocalQuery,
-  useSuspenseLocalQuery,
-} from "@/lib/hooks/use-local-query";
-import { LocalCache } from "@/lib/db/local-cache";
+import { trpc, trpcClient } from "@/utils/trpc";
+import { useInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import type { inferOutput } from "@trpc/tanstack-react-query";
+import { RUNS_FETCH_LIMIT } from "../~components/runs-table/config";
+import { useLocalInfiniteQuery } from "@/lib/hooks/use-local-query";
+import { LocalCache } from "@/lib/db/local-cache";
 
-type ListRunData = inferOutput<typeof trpc.runs.list>;
+// Define proper type for the list runs response
+export type ListRunResponse = inferOutput<typeof trpc.runs.list>;
+export type Run = ListRunResponse["runs"][number];
 
-const listRunsCache = new LocalCache<ListRunData>(
-  "listRuns",
-  "listRuns",
-  1024 * 1024 * 1000, // 1GB
-);
+// Initialize LocalCache for infinite query data
+const runsCache = new LocalCache<InfiniteData<ListRunResponse>>(
+  "runsCache",
+  "runsCache",
+  100 * 60 * 1000,
+); // Adjust table name as needed
 
-export const useListRuns = (orgId: string, projectName: string) =>
-  useLocalQuery<ListRunData>({
-    queryKey: trpc.runs.list.queryKey({
-      organizationId: orgId,
-      projectName: projectName,
-      limit: 100,
-    }),
-    queryFn: () =>
-      trpcClient.runs.list.query({
-        organizationId: orgId,
-        projectName: projectName,
-        limit: 100,
-      }),
-    localCache: listRunsCache,
-    staleTime: 1000 * 5,
+export const useListRuns = (orgId: string, projectName: string) => {
+  const queryOptions = trpc.runs.list.infiniteQueryOptions({
+    organizationId: orgId,
+    projectName: projectName,
+    limit: RUNS_FETCH_LIMIT,
   });
 
-export const useSuspenseListRuns = (orgId: string, projectName: string) =>
-  useSuspenseLocalQuery<ListRunData>({
-    queryKey: trpc.runs.list.queryKey({
-      organizationId: orgId,
-      projectName: projectName,
-      limit: 100,
-    }),
-    queryFn: () =>
-      trpcClient.runs.list.query({
+  return useLocalInfiniteQuery<ListRunResponse>({
+    queryKey: queryOptions.queryKey,
+    queryFn: async ({ pageParam }) => {
+      const result = await trpcClient.runs.list.query({
         organizationId: orgId,
         projectName: projectName,
-        limit: 100,
-      }),
-    localCache: listRunsCache,
-    staleTime: 1000 * 5,
+        limit: RUNS_FETCH_LIMIT,
+        cursor: pageParam ? Number(pageParam) : undefined,
+      });
+      return result;
+    },
+    getNextPageParam: (lastPage) => {
+      if (!lastPage) return undefined;
+      return lastPage.nextCursor ? Number(lastPage.nextCursor) : undefined;
+    },
+    staleTime: 5 * 1000 * 60,
+    localCache: runsCache,
   });
+};
 
-export const prefetchListRuns = (orgId: string, projectName: string) => {
-  prefetchLocalQuery(queryClient, {
-    queryKey: trpc.runs.list.queryKey({
+export const prefetchListRuns = async (
+  queryClient: any,
+  orgId: string,
+  projectName: string,
+) => {
+  await queryClient.prefetchInfiniteQuery({
+    ...trpc.runs.list.infiniteQueryOptions({
       organizationId: orgId,
       projectName: projectName,
-      limit: 100,
+      limit: RUNS_FETCH_LIMIT,
     }),
-    queryFn: () =>
-      trpcClient.runs.list.query({
-        organizationId: orgId,
-        projectName: projectName,
-        limit: 100,
-      }),
-    localCache: listRunsCache,
-    staleTime: 1000 * 5,
+    getNextPageParam: (lastPage: ListRunResponse) => {
+      if (!lastPage) return undefined;
+      // Convert bigint to number if it exists
+      return lastPage.nextCursor ? Number(lastPage.nextCursor) : undefined;
+    },
+  });
+};
+
+export const invalidateListRuns = async (
+  queryClient: any,
+  orgId: string,
+  projectName: string,
+) => {
+  await queryClient.invalidateQueries({
+    queryKey: trpc.runs.list.infiniteQueryOptions({
+      organizationId: orgId,
+      projectName: projectName,
+      limit: RUNS_FETCH_LIMIT,
+    }).queryKey,
   });
 };

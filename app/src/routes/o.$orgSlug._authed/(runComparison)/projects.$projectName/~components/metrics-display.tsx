@@ -9,6 +9,7 @@ import {
   type SearchState,
   type SearchIndex,
 } from "../~lib/search-utils";
+import LineSettings from "./line-settings";
 
 interface MetricsDisplayProps {
   groupedMetrics: GroupedMetrics;
@@ -37,6 +38,14 @@ export function MetricsDisplay({
     regex: null,
   });
   const searchIndexRef = useRef<Map<string, SearchIndex>>(new Map());
+
+  const uniqueLogNames = Object.keys(groupedMetrics)
+    .map((group) =>
+      groupedMetrics[group].metrics
+        .filter((metric) => metric.type === "METRIC")
+        .map((metric) => metric.name),
+    )
+    .flat();
 
   // Memoize the sorted base groups
   const sortedGroups = useMemo(() => {
@@ -87,12 +96,19 @@ export function MetricsDisplay({
             placeholder="Search groups and metrics..."
           />
         </div>
-        <RefreshButton
-          onRefresh={onRefresh}
-          lastRefreshed={lastRefreshed}
-          refreshInterval={10_000}
-          defaultAutoRefresh={false}
-        />
+        <div className="flex items-center gap-2">
+          <RefreshButton
+            onRefresh={onRefresh}
+            lastRefreshed={lastRefreshed}
+            refreshInterval={10_000}
+            defaultAutoRefresh={false}
+          />
+          <LineSettings
+            organizationId={organizationId}
+            projectName={projectName}
+            logNames={uniqueLogNames}
+          />
+        </div>
       </div>
       {filteredGroups.map(([group, data]) => (
         <MultiGroup

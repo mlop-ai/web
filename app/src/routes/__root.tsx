@@ -43,20 +43,37 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
   }),
 });
 
+const PostHogProviderWrapper = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const hasPostHogKey = env.VITE_POSTHOG_KEY;
+  const hasPostHogHost = env.VITE_POSTHOG_HOST;
+
+  if (!hasPostHogKey || !hasPostHogHost) {
+    return children;
+  }
+
+  return (
+    <PostHogProvider
+      apiKey={hasPostHogKey!}
+      options={{ api_host: hasPostHogHost }}
+    >
+      {children}
+    </PostHogProvider>
+  );
+};
+
 function RootComponent() {
   return (
     <>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <PostHogProvider
-          apiKey={env.VITE_POSTHOG_KEY!}
-          options={{
-            api_host: env.VITE_POSTHOG_HOST,
-          }}
-        >
+        <PostHogProviderWrapper>
           <HeadContent />
           <Outlet />
           <Toaster richColors />
-        </PostHogProvider>
+        </PostHogProviderWrapper>
       </ThemeProvider>
       {env.VITE_ENV === "development" && (
         <>

@@ -1,9 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type { inferOutput } from "@trpc/tanstack-react-query";
-import type { trpc } from "@/utils/trpc";
 import { COLORS } from "@/components/ui/color-picker";
-
-type Run = inferOutput<typeof trpc.runs.list>["runs"][number];
+import type { Run } from "../~queries/list-runs";
 
 // alias types for documentation purposes
 type Color = string;
@@ -26,17 +23,19 @@ interface UseSelectedRunsReturn {
 }
 
 /**
- * Get a deterministic color based on the run name
- * @param runName - The name of the run to generate a color for
+ * Get a deterministic color based on the run id
+ * @param runId - The ID of the run to generate a color for
  * @returns A color from the predefined palette
  */
-const getColorForRun = (runName: string): Color => {
+const getColorForRun = (runId: string): Color => {
   // Simple hash function to convert string to number
-  const hash = runName.split("").reduce((acc, char) => {
-    return char.charCodeAt(0) + ((acc << 5) - acc);
+  const hash = runId.split("").reduce((acc, char, index) => {
+    // Add positional weighting to create more variation
+    return char.charCodeAt(0) * (index + 1) + ((acc << 5) - acc);
   }, 0);
 
   // Use the hash to select a color from the palette
+  // The modulo determines which color is selected
   return COLORS[Math.abs(hash) % COLORS.length];
 };
 
@@ -65,7 +64,7 @@ export function useSelectedRuns(
   useEffect(() => {
     if (!runs?.length) return;
 
-    // Only initialize colors if they haven't been set yet
+    // First run initialization - set initial colors and selections
     if (Object.keys(runColors).length === 0) {
       const newColors = runs.reduce<Record<RunId, Color>>((acc, run) => {
         acc[run.id] = getColorForRun(run.id);
@@ -90,7 +89,29 @@ export function useSelectedRuns(
         setSelectedRunsWithColors(newSelectedRuns);
       }
     }
-  }, [runs]); // Only depend on runs changing
+    // Handle subsequent runs loaded through pagination
+    else {
+      // Find runs that don't have colors assigned yet
+      const runsWithoutColors = runs.filter((run) => !runColors[run.id]);
+
+      if (runsWithoutColors.length > 0) {
+        // Generate colors for new runs
+        const newColors = runsWithoutColors.reduce<Record<RunId, Color>>(
+          (acc, run) => {
+            acc[run.id] = getColorForRun(run.id);
+            return acc;
+          },
+          {},
+        );
+
+        // Update the colors state with the new colors
+        setRunColors((prevColors) => ({
+          ...prevColors,
+          ...newColors,
+        }));
+      }
+    }
+  }, [runs, runColors, selectedRunsWithColors]); // Include runColors and selectedRunsWithColors in dependencies
 
   // Memoize handlers to prevent unnecessary rerenders
   const handleRunSelection = useCallback(
@@ -110,7 +131,7 @@ export function useSelectedRuns(
           const run = runs.find((r) => r.id === runId);
           if (!run) return prev;
 
-          // Ensure we have a color for this run
+          // Ensure we have a color for this run - always use runId for consistency
           const color = runColors[runId] || getColorForRun(runId);
 
           // Update runColors if needed

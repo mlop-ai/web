@@ -1,4 +1,4 @@
-const keysToStrip = ["requirements", "git", "process", "gpu"];
+const keysToStrip = ["requirements", "git", "process"];
 
 export function stripSystemMetadata(systemMetadata: any) {
   // if it is a object, remove the top level keys that are in the keysToStrip array

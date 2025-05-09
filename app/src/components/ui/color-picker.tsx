@@ -131,7 +131,7 @@ export function ColorPicker({
           )}
         >
           <div
-            className="h-5 w-5 rounded-full shadow-sm ring-1 ring-border"
+            className="h-5 w-5 rounded-full shadow-sm ring-1 ring-border transition-all duration-200 hover:ring-[1.5px] hover:ring-primary/60"
             style={{ backgroundColor: currentColor }}
           />
         </Button>

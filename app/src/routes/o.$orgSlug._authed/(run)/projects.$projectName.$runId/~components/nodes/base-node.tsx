@@ -34,7 +34,6 @@ export default function BaseNode({ id, data, selected }: NodeProps) {
         "shadow-sm transition-all duration-200",
         selected ? "bg-blue-200 dark:bg-blue-900" : "dark:bg-accent",
       )}
-      style={{ minWidth: 180 }}
     >
       {/* Top target handle for intra-module connections */}
       <Handle
@@ -55,12 +54,15 @@ export default function BaseNode({ id, data, selected }: NodeProps) {
       {/* Node content */}
       <div className="flex flex-col gap-1">
         {!isRoot && (
-          <div className="font-mono text-xs text-gray-500 dark:text-gray-400">
+          <div
+            className="font-mono text-xs break-words text-gray-500 dark:text-gray-400"
+            style={{ maxWidth: 160 }}
+          >
             {key}
           </div>
         )}
 
-        <div className="truncate text-sm font-medium text-gray-800 dark:text-white">
+        <div className="text-sm font-medium break-words text-gray-800 dark:text-white">
           {type}
         </div>
       </div>

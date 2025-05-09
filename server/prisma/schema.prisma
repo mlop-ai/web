@@ -376,6 +376,10 @@ model RunTriggers {
 enum NotificationType {
   RUN_CANCELLED
   RUN_FAILED
+  INFO
+  WARNING
+  ERROR
+  DEBUG
 }
 
 model Notification {

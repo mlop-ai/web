@@ -1,5 +1,5 @@
-import Dexie, { type EntityTable } from "dexie";
-import { useEffect, useState } from "react";
+import Dexie, { liveQuery, type EntityTable } from "dexie";
+import { useEffect, useState, useCallback } from "react";
 
 export interface CacheData<T> {
   id: string;
@@ -67,3 +67,45 @@ export const useCheckDatabaseSize = (db: LocalCache<any>) => {
     checkSize();
   }, [db]);
 };
+
+export function useLocalStorage<T>(
+  db: LocalCache<T>,
+  key: string,
+  defaultValue: T,
+): [T, (value: T, finishedAt?: Date | null) => Promise<void>] {
+  const [value, setValue] = useState<T>(defaultValue);
+
+  useEffect(() => {
+    // Subscribe to liveQuery of this key
+    const sub = liveQuery(() => db.getData(key)).subscribe({
+      next: (record: CacheData<T> | undefined) => {
+        if (record && record.data !== undefined) {
+          setValue(record.data);
+        } else {
+          // no record yet → use default
+          setValue(defaultValue);
+        }
+      },
+      error: (err) => {
+        console.error("liveQuery error in useLocalStorage:", err);
+      },
+    });
+
+    return () => {
+      sub.unsubscribe();
+    };
+  }, [db, key, defaultValue]);
+
+  const setLocalStorage = useCallback(
+    async (newValue: T, finishedAt: Date | null = null) => {
+      try {
+        await db.setData(key, newValue, finishedAt);
+      } catch (err) {
+        console.error("Error writing to LocalCache:", err);
+      }
+    },
+    [db, key],
+  );
+
+  return [value, setLocalStorage];
+}

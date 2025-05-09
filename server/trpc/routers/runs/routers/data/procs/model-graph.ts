@@ -75,5 +75,10 @@ export const modelGraphProcedure = protectedOrgProcedure
       }
     }
 
+    // if empty json return null
+    if (Object.keys(graph).length === 0) {
+      return null;
+    }
+
     return graph;
   });

@@ -16,6 +16,9 @@ import type { LogGroup } from "./~hooks/use-filtered-logs";
 import { prefetchGetRun, useGetRun } from "./~queries/get-run";
 import { Layout, SkeletonLayout } from "./~components/layout";
 import { refreshAllData } from "./~queries/refresh-all-data";
+import LineSettings from "./~components/line-settings";
+import { useMemo } from "react";
+
 export const Route = createFileRoute(
   "/o/$orgSlug/_authed/(run)/projects/$projectName/$runId/",
 )({
@@ -51,12 +54,25 @@ function RouteComponent() {
     runId,
     onRefresh: refreshAllData,
     defaultAutoRefresh: runData?.status === "RUNNING",
-    refreshInterval: 10000,
+    refreshInterval: 2000,
   });
 
   const { filteredLogGroups, handleSearch } = useFilteredLogs({
     logs: runData?.logs || [],
   });
+
+  // Memoize the rendered DataGroups to prevent recreation on every render
+  const dataGroups = useMemo(() => {
+    return filteredLogGroups.map((group: LogGroup) => (
+      <DataGroup
+        key={group.groupName}
+        group={group}
+        tenantId={organizationId}
+        projectName={projectName}
+        runId={runId}
+      />
+    ));
+  }, [filteredLogGroups, organizationId, projectName, runId]);
 
   if (isLoading || !runData) {
     return (
@@ -76,24 +92,23 @@ function RouteComponent() {
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Run Metrics</h2>
-            <RefreshButton
-              onRefresh={handleRefresh}
-              lastRefreshed={lastRefreshTime || undefined}
-              defaultAutoRefresh={runData.status === "RUNNING"}
-              refreshInterval={10_000}
-            />
+            <div className="flex items-center gap-2">
+              <RefreshButton
+                onRefresh={handleRefresh}
+                lastRefreshed={lastRefreshTime || undefined}
+                defaultAutoRefresh={runData.status === "RUNNING"}
+                refreshInterval={2000}
+              />
+              <LineSettings
+                organizationId={organizationId}
+                projectName={projectName}
+                runId={runId}
+              />
+            </div>
           </div>
           <LogSearch onSearch={handleSearch} placeholder="Search metrics..." />
         </div>
-        {filteredLogGroups.map((group: LogGroup) => (
-          <DataGroup
-            key={group.groupName}
-            group={group}
-            tenantId={organizationId}
-            projectName={projectName}
-            runId={runId}
-          />
-        ))}
+        {dataGroups}
       </div>
     </Layout>
   );

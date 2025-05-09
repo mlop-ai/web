@@ -1,7 +1,7 @@
 "use client";
 
 import { DropdownRegion } from "@/components/core/runs/dropdown-region/dropdown-region";
-import { MultiLineChart } from "./line-chart";
+import { MultiLineChart } from "./line-chart-multi";
 import { MultiGroupAudio } from "./audio";
 import { MultiGroupImage } from "./image";
 import { MultiGroupVideo } from "./video";
