@@ -32,7 +32,7 @@
     "studio:local": "dotenv -e .env.locals prisma studio",
     "studio:dev": "dotenv -e .env.dev prisma studio",
     "studio:prod": "dotenv -e .env.prod prisma studio",
-    "prebuild": "pnpm check-types"
+    "prebuild": "prisma generate && pnpm check-types"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.787.0",

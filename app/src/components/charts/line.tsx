@@ -531,6 +531,8 @@ function generateSeriesOptions(
     smooth: false,
     symbol: "circle" as const,
     symbolSize: 6,
+    // sampling: "average",
+    // large: true,
     showSymbol: l.x.length === 1 || (l.x.length < 100 && lines.length === 1),
     sampling: "lttb" as const,
     lineStyle: {
@@ -878,6 +880,25 @@ const LineChart = forwardRef<ReactECharts, LineChartProps>(
     const handleRef = useCallback(
       (chart: ReactECharts | null) => {
         chartRef.current = chart;
+
+        // Add event listener for datazoom event
+        if (chart) {
+          const echartsInstance = chart.getEchartsInstance();
+          echartsInstance.on("datazoom", () => {
+            // Get the current data zoom range in percentage
+            const dataZoomComponent = echartsInstance
+              // @ts-ignore
+              .getModel()
+              .getComponent("xAxis", 0);
+
+            const xExtent = dataZoomComponent.axis.scale.getExtent() as [
+              number,
+              number,
+            ];
+            console.log("xExtent", xExtent);
+          });
+        }
+
         setChartRef(chart);
 
         if (typeof ref === "function") ref(chart);

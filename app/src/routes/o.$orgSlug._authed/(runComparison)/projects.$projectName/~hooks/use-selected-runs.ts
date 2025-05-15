@@ -1,10 +1,24 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { COLORS } from "@/components/ui/color-picker";
 import type { Run } from "../~queries/list-runs";
+import { LocalCache } from "@/lib/db/local-cache";
 
 // alias types for documentation purposes
 type Color = string;
 type RunId = string;
+
+// Create a single LocalCache for all run-related data
+const runCacheDb = new LocalCache<{
+  colors: Record<RunId, Color>;
+  selectedRuns: Record<RunId, { run: Run; color: Color }>;
+}>(
+  "run-selection-db",
+  "run-selections",
+  10 * 1024 * 1024, // 10MB limit
+);
+
+// Unique key for storing in the cache
+const STORAGE_KEY = "run-selection-data";
 
 interface UseSelectedRunsReturn {
   /** Map of all run IDs to their assigned colors */
@@ -47,6 +61,7 @@ const getColorForRun = (runId: string): Color => {
  * - Maintains color consistency across selections
  * - Automatically selects the 5 most recent runs initially
  * - Provides handlers for selection and color changes
+ * - Persists selections and colors in local cache
  *
  * @param runs - Array of run objects from the API
  * @returns Object containing state and handlers for run selection and colors
@@ -59,6 +74,50 @@ export function useSelectedRuns(
   const [selectedRunsWithColors, setSelectedRunsWithColors] = useState<
     Record<RunId, { run: Run; color: Color }>
   >({});
+
+  // Load cached data on initial render
+  useEffect(() => {
+    const loadCachedData = async () => {
+      try {
+        const cachedData = await runCacheDb.getData(STORAGE_KEY);
+        if (cachedData?.data) {
+          // Only set state if there's meaningful data to restore
+          if (Object.keys(cachedData.data.colors).length > 0) {
+            setRunColors(cachedData.data.colors);
+          }
+          if (Object.keys(cachedData.data.selectedRuns).length > 0) {
+            setSelectedRunsWithColors(cachedData.data.selectedRuns);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading run selections from cache:", error);
+      }
+    };
+
+    loadCachedData();
+  }, []);
+
+  // Save to cache whenever state changes
+  useEffect(() => {
+    const saveToCache = async () => {
+      try {
+        // Only save if we have meaningful data
+        if (
+          Object.keys(runColors).length > 0 ||
+          Object.keys(selectedRunsWithColors).length > 0
+        ) {
+          await runCacheDb.setData(STORAGE_KEY, {
+            colors: runColors,
+            selectedRuns: selectedRunsWithColors,
+          });
+        }
+      } catch (error) {
+        console.error("Error saving run selections to cache:", error);
+      }
+    };
+
+    saveToCache();
+  }, [runColors, selectedRunsWithColors]);
 
   // Initialize or update colors when runs change
   useEffect(() => {

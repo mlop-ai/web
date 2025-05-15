@@ -8,6 +8,7 @@ import { ImagesView } from "./images";
 import { AudioView } from "./audio";
 import { HistogramView } from "./histogram-view";
 import { VideoView } from "./video";
+import { TableView } from "./table";
 
 interface DataGroupProps {
   group: LogGroup;
@@ -137,6 +138,17 @@ const LogView = memo(
     if (log.logType === "VIDEO") {
       return (
         <VideoView
+          log={log}
+          tenantId={tenantId}
+          projectName={projectName}
+          runId={runId}
+        />
+      );
+    }
+
+    if (log.logType === "TABLE") {
+      return (
+        <TableView
           log={log}
           tenantId={tenantId}
           projectName={projectName}

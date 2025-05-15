@@ -54,7 +54,7 @@ function RouteComponent() {
     runId,
     onRefresh: refreshAllData,
     defaultAutoRefresh: runData?.status === "RUNNING",
-    refreshInterval: 2000,
+    refreshInterval: 5000,
   });
 
   const { filteredLogGroups, handleSearch } = useFilteredLogs({
@@ -97,7 +97,7 @@ function RouteComponent() {
                 onRefresh={handleRefresh}
                 lastRefreshed={lastRefreshTime || undefined}
                 defaultAutoRefresh={runData.status === "RUNNING"}
-                refreshInterval={2000}
+                refreshInterval={5000}
               />
               <LineSettings
                 organizationId={organizationId}

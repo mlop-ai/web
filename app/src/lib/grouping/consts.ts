@@ -16,9 +16,11 @@ export const LOG_GROUP_MAPPING: Record<RunLogType, string> = {
 export const LOG_GROUP_INDEX: Record<string, number> = {
   metrics: 0,
   media: 1,
-  other: -5,
-  files: -4,
+  other: -7,
+  files: -6,
   sys: -1,
-  audio: -3,
+  param: -3,
+  grad: -4,
+  audio: -5,
   image: -2,
 } as const;

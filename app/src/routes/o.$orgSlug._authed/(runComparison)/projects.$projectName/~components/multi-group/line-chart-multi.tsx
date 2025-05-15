@@ -261,11 +261,9 @@ export const MultiLineChart = memo(
     // Empty state - only if we have no data and all queries are done loading
     if (allQueriesDone && !hasAnyData) {
       return (
-        <div className="h-full w-full flex-grow">
-          <div className="flex h-full w-full flex-col items-center justify-center bg-accent">
-            <h2 className="text-2xl font-bold">{title}</h2>
-            <p className="text-sm text-gray-500">No data received yet</p>
-          </div>
+        <div className="flex h-full w-full flex-grow flex-col items-center justify-center bg-accent">
+          <h2 className="text-2xl font-bold">{title}</h2>
+          <p className="text-sm text-gray-500">No data received yet</p>
         </div>
       );
     }
