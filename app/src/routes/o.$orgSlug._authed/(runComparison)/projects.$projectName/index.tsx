@@ -21,11 +21,11 @@ export const Route = createFileRoute(
     const auth = context.auth;
 
     // Pass the queryClient when prefetching
-    prefetchListRuns(
-      context.queryClient,
-      context.auth.activeOrganization.id,
-      params.projectName,
-    );
+    // prefetchListRuns(
+    //   context.queryClient,
+    //   context.auth.activeOrganization.id,
+    //   params.projectName,
+    // );
 
     return {
       organizationId: auth.activeOrganization.id,
@@ -69,6 +69,8 @@ function RouteComponent() {
     isError,
     error,
   } = useListRuns(organizationId, projectName);
+
+  console.log("data", data);
 
   // Flatten the pages to get all runs
   const runs = useMemo(() => {

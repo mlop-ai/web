@@ -23,7 +23,9 @@ export const useListRuns = (orgId: string, projectName: string) => {
     limit: RUNS_FETCH_LIMIT,
   });
 
-  return useLocalInfiniteQuery<ListRunResponse>({
+  // return useInfiniteQuery(queryOptions);
+
+  return useInfiniteQuery({
     queryKey: queryOptions.queryKey,
     queryFn: async ({ pageParam }) => {
       const result = await trpcClient.runs.list.query({
@@ -34,12 +36,13 @@ export const useListRuns = (orgId: string, projectName: string) => {
       });
       return result;
     },
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: (lastPage: ListRunResponse) => {
       if (!lastPage) return undefined;
       return lastPage.nextCursor ? Number(lastPage.nextCursor) : undefined;
     },
     staleTime: 5 * 1000 * 60,
-    localCache: runsCache,
+    initialPageParam: undefined,
+    // localCache: runsCache,
   });
 };
 
