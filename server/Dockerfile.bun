@@ -6,8 +6,10 @@ RUN apt-get update && apt-get install -y libc6-dev nodejs npm
 
 WORKDIR /app
 
+COPY bun.lockb package.json* ./
+RUN bun install
 COPY . .
-RUN bun install; bun run build
+RUN bun run build
 
 ENV NODE_ENV=production
 ENV PORT=3001

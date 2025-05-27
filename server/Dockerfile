@@ -41,12 +41,16 @@ ENV BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
 
 WORKDIR /app
 
+COPY package.json pnpm-lock.yaml ./
+
+RUN corepack enable pnpm && pnpm i 
+
 COPY . .
-RUN corepack enable pnpm && pnpm i && pnpm run build
+RUN pnpm run build
 
 ENV NODE_ENV=production
 ENV PORT=3001
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "./.next/standalone/server.js"]
 EXPOSE 3001
+CMD ["node", "./.next/standalone/server.js"]
