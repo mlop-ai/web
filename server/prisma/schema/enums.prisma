@@ -1,0 +1,60 @@
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum NotificationType {
+  RUN_CANCELLED
+  RUN_FAILED
+  INFO
+  WARNING
+  ERROR
+  DEBUG
+}
+
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum RunStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  TERMINATED
+  CANCELLED
+}
+
+enum RunLogType {
+  METRIC
+  IMAGE
+  VIDEO
+  AUDIO
+  FILE
+  TEXT
+  ARTIFACT
+  HISTOGRAM
+  TABLE
+  DATA
+}
+
+enum RunGraphNodeType {
+  MODULE
+  UNKNOWN
+  CONTAINER
+  IO
+}
+
+enum RunTriggerType {
+  CANCEL // Trigger to cancel a run
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+}
+
+

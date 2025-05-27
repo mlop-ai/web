@@ -1,0 +1,15 @@
+model Notification {
+  id             BigInt           @id @default(autoincrement())
+  runId          BigInt
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  run            Runs             @relation(fields: [runId], references: [id], onDelete: Cascade)
+  createdAt      DateTime         @default(now())
+  type           NotificationType
+  content        String
+  read           Boolean          @default(false)
+
+  @@index([runId])
+  @@index([organizationId])
+  @@map("notifications")
+}
