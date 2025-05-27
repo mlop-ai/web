@@ -9,8 +9,11 @@ ENV VITE_IS_DOCKER=${VITE_IS_DOCKER}
 ENV VITE_ENV=${VITE_ENV}
 ENV VITE_SERVER_URL=${VITE_SERVER_URL}
 
+COPY package.json pnpm-lock.yaml ./
+RUN npm install -g pnpm && pnpm i 
+
 COPY . .
-RUN npm install -g pnpm && pnpm i && pnpm build
+RUN pnpm build
 
 FROM nginx:stable-alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
