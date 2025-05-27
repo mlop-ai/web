@@ -1,0 +1,73 @@
+model OrganizationSubscription {
+  id                   String           @id @default(uuid())
+  organizationId       String           @unique
+  organization         Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stripeCustomerId     String
+  stripeSubscriptionId String
+  plan                 SubscriptionPlan
+  seats                Int
+  usageLimits          Json // flexible, so you can customize per org
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  @@map("organization_subscription")
+}
+
+model Organization {
+  id                       String                    @id
+  name                     String
+  slug                     String
+  logo                     String?
+  createdAt                DateTime
+  metadata                 String?
+  members                  Member[]
+  invitations              Invitation[]
+  ApiKey                   ApiKey[]
+  Projects                 Projects[]
+  Runs                     Runs[]
+  Feedback                 Feedback[]
+  Notification             Notification[]
+  OrganizationSubscription OrganizationSubscription?
+
+  @@unique([slug])
+  @@map("organization")
+}
+
+model Member {
+  id             String           @id
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           OrganizationRole
+  createdAt      DateTime
+
+  @@map("member")
+}
+
+model Feedback {
+  id                Int          @id @default(autoincrement())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime     @default(now())
+  feedback          String
+  feedbackSentiment String?
+
+  @@map("feedback")
+}
+
+model Invitation {
+  id             String           @id
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           OrganizationRole
+  status         InvitationStatus
+  expiresAt      DateTime
+  inviterId      String
+  user           User             @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@map("invitation")
+}

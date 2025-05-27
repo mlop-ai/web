@@ -1,0 +1,110 @@
+model Projects {
+  id             BigInt       @id @default(autoincrement())
+  name           String       @db.VarChar(255)
+  organizationId String
+  tags           String[]     @default([])
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  runs           Runs[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  // This unique constraint ensures we can efficiently look up projects by name + orgId
+  @@unique([organizationId, name])
+  @@map("projects")
+}
+
+model RunLogs {
+  id        BigInt     @id @default(autoincrement())
+  runId     BigInt
+  logGroup  String?
+  logName   String
+  logType   RunLogType
+  run       Runs       @relation(fields: [runId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+
+  @@index([runId])
+  @@map("run_logs")
+}
+
+model Runs {
+  id              BigInt    @id @default(autoincrement())
+  name            String    @db.VarChar(255)
+  organizationId  String
+  tags            String[]  @default([])
+  loggerSettings  Json?
+  systemMetadata  Json?
+  config          Json?
+  projectId       BigInt
+  status          RunStatus @default(RUNNING)
+  statusUpdated   DateTime?
+  statusMetadata  Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdById     String
+  creatorApiKeyId String
+
+  creator      User           @relation(fields: [createdById], references: [id])
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  project      Projects       @relation(fields: [projectId], references: [id])
+  logs         RunLogs[]
+  triggers     RunTriggers[]
+  Notification Notification[]
+  RunGraphNode RunGraphNode[]
+  RunGraphEdge RunGraphEdge[]
+  ApiKey       ApiKey         @relation(fields: [creatorApiKeyId], references: [id])
+
+  // Add compound index on projectId and organizationId to efficiently find runs for a project
+  @@index([projectId, organizationId])
+  @@index([status])
+  @@index([createdById])
+  @@map("runs")
+}
+
+model RunGraphNode {
+  id       BigInt            @id @default(autoincrement())
+  runId    BigInt
+  run      Runs              @relation(fields: [runId], references: [id], onDelete: Cascade)
+  name     String
+  depth    Int
+  type     String
+  order    Int?
+  label    String?
+  nodeId   String?
+  nodeType RunGraphNodeType?
+  instId   String?
+  args     Json?
+  kwargs   Json?
+  params   Json?
+
+  @@index([runId])
+  @@index([depth])
+  @@index([name])
+  @@index([nodeId])
+  @@map("run_graph_nodes")
+}
+
+model RunGraphEdge {
+  id       BigInt @id @default(autoincrement())
+  runId    BigInt
+  run      Runs   @relation(fields: [runId], references: [id], onDelete: Cascade)
+  sourceId String
+  targetId String
+
+  @@index([runId])
+  @@index([sourceId])
+  @@index([targetId])
+  @@map("run_graph_edges")
+}
+
+model RunTriggers {
+  id          BigInt         @id @default(autoincrement())
+  runId       BigInt
+  run         Runs           @relation(fields: [runId], references: [id], onDelete: Cascade)
+  trigger     String
+  createdAt   DateTime       @default(now())
+  triggerType RunTriggerType
+
+  @@index([runId])
+  @@index([triggerType])
+  @@map("run_triggers")
+}
